@@ -37,13 +37,6 @@ struct HistoryView: View {
 						}
 					}
 				}.onDelete(perform: deleteItem)
-				
-//				Button(action: {
-//					let item = Item(imageData: Data(), response: "Hello World", timestamp: Date.now)
-//					modelContext.insert(item)
-//				}) {
-//					Text("Add Data")
-//				}
 			}
 			.navigationTitle("History")
 			.navigationBarTitleDisplayMode(.inline)

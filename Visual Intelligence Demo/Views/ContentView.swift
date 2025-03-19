@@ -12,198 +12,260 @@ struct ContentView: View {
 	
     @Environment(\.modelContext) private var modelContext
 	
+	@State private var viewModel = ViewModel()
+	
 	@StateObject var camera = CameraModel()
 	@StateObject var query = OpenAIQuery()
 	@StateObject var classifier = Classifier()
 	
-	@State private var historySheetVisible: Bool = false
-	@State private var askingQuestion: Bool = false
-	@State private var question: String = ""
 	@FocusState private var focused: Bool
 
     var body: some View {
+		
 		ZStack {
-			
-			CameraView(camera: camera)
+			CameraView(session: $viewModel.cameraSession, checkPermission: viewModel.checkPermissions)
 				.edgesIgnoringSafeArea(.all)
 			
-//			Color.black
-//				.edgesIgnoringSafeArea(.all)
+			if (viewModel.presentingWelcome) {
+				WelcomeView(isPresented: $viewModel.presentingWelcome)
+					.animation(.easeOut, value: viewModel.presentingWelcome)
+			}
 			
 			VStack {
 				
-				if (classifier.predicition != nil) {
-					Text(classifier.predicition!)
-						.padding()
-						.background(.ultraThickMaterial)
-						.clipShape(RoundedRectangle(cornerRadius: 10))
-				}
-				
-				if (query.status == .waiting) {
-					Text("Asking ChatGPT")
-						.padding()
-						.background(.ultraThickMaterial)
-						.clipShape(RoundedRectangle(cornerRadius: 10))
-				}
-				
-				if (query.response != nil) {
-					VStack {
-						
-						ScrollView {
-							Text(LocalizedStringKey(query.response?.choices.first?.message.content ?? ""))
+				HStack {
+					Spacer()
+					
+					Menu(content: {
+						Button("History", systemImage: "scroll") {
+							viewModel.presentingHistory = true
 						}
-						
-						Divider()
-						
-						HStack(alignment: .center) {
-							
-							Link(destination: URL(string: "https://www.openai.com")!) {
-								Image("OpenAI")
-									.resizable()
-									.scaledToFit()
-									.frame(width: 75)
+						Button("Developer Options", systemImage: "wrench.and.screwdriver") {
+							viewModel.presentingDeveloperOptions = true
+						}
+					}, label: {
+						Image(systemName: "ellipsis")
+							.padding(10)
+							.background {
+								Circle()
+									.foregroundStyle(.ultraThinMaterial)
+									.environment(\.colorScheme, .light)
 							}
 							
-							Text("•  Check import info for mistakes ")
-								.font(.callout)
-								.foregroundStyle(Color(UIColor.systemGray))
-							
-							Spacer()
-						}.padding(.top, 5)
-					}
-						.padding()
-						.background(.ultraThickMaterial)
-						.clipShape(RoundedRectangle(cornerRadius: 10))
-						.padding()
-				}
-				
-				if (askingQuestion) {
-					TextField("Ask a question", text: $question)
-						.focused($focused)
-						.foregroundStyle(Color.white)
-						.padding()
-						.background(.ultraThinMaterial)
-						.clipShape(RoundedRectangle(cornerRadius: 10))
-						.padding()
-						.onSubmit {
-							camera.capture()
-						}
-				}
+					}).buttonStyle(.plain)
+				}.padding(.horizontal, 20)
 				
 				Spacer()
-
-				HStack(alignment: .center, spacing: 60) {
-					
-					Button(action: {
-						withAnimation {
-							askingQuestion.toggle()
-							if askingQuestion {
-								focused = true
-							}
-						}
-					}) {
-						Image(systemName: "text.bubble")
-							.font(.system(size: 20))
-							.foregroundStyle(Color.white)
-							.padding(10)
-							.background {
-								Circle()
-									.fill(.ultraThinMaterial)
-							}
-					}.buttonStyle(PlainButtonStyle())
-					
-					Button(action: {
+				
+				Button(action: {
+					viewModel.capture()
+				}) {
+					ZStack {
+						Circle()
+							.fill(Color.white)
+							.frame(width: 50, height: 50)
 						
-						if (query.response != nil || query.status == .waiting || classifier.predicition != nil || classifier.status == .waiting) {
-							classifier.reset()
-							query.reset()
-						} else {
-							classifier.status = .waiting
-							camera.capture()
-						}
-						
-					}) {
-						ZStack {
-							
-							if (query.response != nil || query.status == .waiting || classifier.predicition != nil || classifier.status == .waiting) {
-								Image(systemName: "xmark")
-									.font(.system(size: 25))
-									.foregroundStyle(Color.white)
-							} else {
-								Circle()
-									.fill(Color.white)
-									.frame(width: 50, height: 50)
-							}
-							
-							Circle()
-								.stroke(Color.white, lineWidth: 2)
-								.frame(width: 60, height: 60)
-						}
+						Circle()
+							.stroke(Color.white, lineWidth: 2)
+							.frame(width: 60, height: 60)
 					}
-					.buttonStyle(PlainButtonStyle())
-					
-					Button(action: {
-						withAnimation {
-							historySheetVisible = true
-						}
-					}) {
-						Image(systemName: "photo")
-							.font(.system(size: 20))
-							.foregroundStyle(Color.white)
-							.padding(10)
-							.background {
-								Circle()
-									.fill(.ultraThinMaterial)
-							}
-					}.buttonStyle(PlainButtonStyle())
 				}
 			}
-		}.ignoresSafeArea(.keyboard, edges: .bottom)
-		.overlay {
-			if (query.status == .waiting || classifier.status == .waiting) {
-				IntelligenceGlow()
-			}
 		}
-		.sheet(isPresented: $historySheetVisible) {
+		.sheet(isPresented: $viewModel.presentingHistory) {
 			HistoryView()
 		}
-		.onChange(of: camera.capturedData) {
-			Task {
-				
-				classifier.reset()
-				query.reset()
-				
-				let image = UIImage(data: camera.capturedData!)!
-				
-				if (question == "") {
-					classifier.classify(image)
-				}
-				
-				if (classifier.predicition == nil) {
-					await query.request(image: image, question: question)
-				}
-			}
+		.sheet(isPresented: $viewModel.presentingDeveloperOptions) {
+			Text("Developer Options Coming Soon")
 		}
-		.onChange(of: query.response) {
-			if (query.response != nil) {
-				let imageData = camera.capturedData ?? Data()
-				let response = query.response?.choices.first?.message.content ?? ""
-				let date = Date.now
-				
-				let item = Item(imageData: imageData, response: response, timestamp: date)
-				modelContext.insert(item)
-			}
-		}
-		.onChange(of: classifier.predicition) {
-			if (classifier.predicition != nil) {
-				let imageData = camera.capturedData ?? Data()
-				let response = classifier.predicition!
-				let date = Date.now
-				
-				let item = Item(imageData: imageData, response: response, timestamp: date)
-				modelContext.insert(item)
-			}
-		}
+		
+		
+//		ZStack {
+//			
+//			CameraView(camera: camera)
+//				.edgesIgnoringSafeArea(.all)
+//			
+//			WelcomeView(presented: $viewModel.presentingWelcome)
+//				.edgesIgnoringSafeArea(.all)
+//			
+////			Color.black
+////				.edgesIgnoringSafeArea(.all)
+//			
+//			VStack {
+//				
+//				if (classifier.predicition != nil) {
+//					Text(classifier.predicition!)
+//						.padding()
+//						.background(.ultraThickMaterial)
+//						.clipShape(RoundedRectangle(cornerRadius: 10))
+//				}
+//				
+//				if (query.status == .waiting) {
+//					Text("Asking ChatGPT")
+//						.padding()
+//						.background(.ultraThickMaterial)
+//						.clipShape(RoundedRectangle(cornerRadius: 10))
+//				}
+//				
+//				if (query.response != nil) {
+//					VStack {
+//						
+//						ScrollView {
+//							Text(LocalizedStringKey(query.response?.choices.first?.message.content ?? ""))
+//						}
+//						
+//						Divider()
+//						
+//						HStack(alignment: .center) {
+//							
+//							Link(destination: URL(string: "https://www.openai.com")!) {
+//								Image("OpenAI")
+//									.resizable()
+//									.scaledToFit()
+//									.frame(width: 75)
+//							}
+//							
+//							Text("•  Check import info for mistakes ")
+//								.font(.callout)
+//								.foregroundStyle(Color(UIColor.systemGray))
+//							
+//							Spacer()
+//						}.padding(.top, 5)
+//					}
+//						.padding()
+//						.background(.ultraThickMaterial)
+//						.clipShape(RoundedRectangle(cornerRadius: 10))
+//						.padding()
+//				}
+//				
+//				if (viewModel.askingQuestion) {
+//					TextField("Ask a question", text: $viewModel.question)
+//						.focused($focused)
+//						.foregroundStyle(Color.white)
+//						.padding()
+//						.background(.ultraThinMaterial)
+//						.clipShape(RoundedRectangle(cornerRadius: 10))
+//						.padding()
+//						.onSubmit {
+//							camera.capture()
+//						}
+//				}
+//				
+//				Spacer()
+//
+//				HStack(alignment: .center, spacing: 60) {
+//					
+//					Button(action: {
+//						withAnimation {
+//							viewModel.askingQuestion.toggle()
+//							if viewModel.askingQuestion {
+//								focused = true
+//							}
+//						}
+//					}) {
+//						Image(systemName: "text.bubble")
+//							.font(.system(size: 20))
+//							.foregroundStyle(Color.white)
+//							.padding(10)
+//							.background {
+//								Circle()
+//									.fill(.ultraThinMaterial)
+//							}
+//					}.buttonStyle(PlainButtonStyle())
+//					
+//					Button(action: {
+//						
+//						if (query.response != nil || query.status == .waiting || classifier.predicition != nil || classifier.status == .waiting) {
+//							classifier.reset()
+//							query.reset()
+//						} else {
+//							classifier.status = .waiting
+//							camera.capture()
+//						}
+//						
+//					}) {
+//						ZStack {
+//							
+//							if (query.response != nil || query.status == .waiting || classifier.predicition != nil || classifier.status == .waiting) {
+//								Image(systemName: "xmark")
+//									.font(.system(size: 25))
+//									.foregroundStyle(Color.white)
+//							} else {
+//								Circle()
+//									.fill(Color.white)
+//									.frame(width: 50, height: 50)
+//							}
+//							
+//							Circle()
+//								.stroke(Color.white, lineWidth: 2)
+//								.frame(width: 60, height: 60)
+//						}
+//					}
+//					.buttonStyle(PlainButtonStyle())
+//					
+//					Button(action: {
+//						withAnimation {
+//							viewModel.presentingHistory = true
+//						}
+//					}) {
+//						Image(systemName: "photo")
+//							.font(.system(size: 20))
+//							.foregroundStyle(Color.white)
+//							.padding(10)
+//							.background {
+//								Circle()
+//									.fill(.ultraThinMaterial)
+//							}
+//					}.buttonStyle(PlainButtonStyle())
+//				}
+//			}
+//		}
+//		.ignoresSafeArea(.keyboard, edges: .bottom)
+//		.overlay {
+//			if (query.status == .waiting || classifier.status == .waiting) {
+//				IntelligenceGlow()
+//			}
+//		}
+//		.sheet(isPresented: $viewModel.presentingHistory) {
+//			HistoryView()
+//		}
+//		.onChange(of: camera.capturedData) {
+//			Task {
+//				
+//				classifier.reset()
+//				query.reset()
+//				
+//				let image = UIImage(data: camera.capturedData!)!
+//				
+//				if (viewModel.question == "") {
+//					classifier.classify(image)
+//				}
+//				
+//				if (classifier.predicition == nil) {
+//					await query.request(image: image, question: viewModel.question)
+//				}
+//			}
+//		}
+//		.onChange(of: query.response) {
+//			if (query.response != nil) {
+//				let imageData = camera.capturedData ?? Data()
+//				let response = query.response?.choices.first?.message.content ?? ""
+//				let date = Date.now
+//				
+//				let item = Item(imageData: imageData, response: response, timestamp: date)
+//				modelContext.insert(item)
+//			}
+//		}
+//		.onChange(of: classifier.predicition) {
+//			if (classifier.predicition != nil) {
+//				let imageData = camera.capturedData ?? Data()
+//				let response = classifier.predicition!
+//				let date = Date.now
+//				
+//				let item = Item(imageData: imageData, response: response, timestamp: date)
+//				modelContext.insert(item)
+//			}
+//		}
     }
 }
 

@@ -10,18 +10,21 @@ import AVFoundation
 
 struct CameraView: UIViewRepresentable {
 	
-	@ObservedObject var camera: CameraModel
+	@Binding var session: AVCaptureSession
+	var checkPermission: () -> Void
 	
 	func makeUIView(context: Context) -> some UIView {
 		let view = UIView(frame: UIScreen.main.bounds)
-		camera.checkPermissions()
-		camera.preview = AVCaptureVideoPreviewLayer(session: camera.session)
-		camera.preview.frame = view.frame
-		camera.preview.videoGravity = .resizeAspectFill
 		
-		view.layer.addSublayer(camera.preview)
+		checkPermission()
 		
-		camera.session.startRunning()
+		let preview = AVCaptureVideoPreviewLayer(session: session)
+		preview.frame = view.frame
+		preview.videoGravity = .resizeAspectFill
+		
+		view.layer.addSublayer(preview)
+		
+		session.startRunning()
 		
 		return view
 	}
