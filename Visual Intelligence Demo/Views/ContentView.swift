@@ -31,7 +31,7 @@ struct ContentView: View {
 					.animation(.easeOut, value: viewModel.presentingWelcome)
 			}
 			
-			VStack {
+			VStack(spacing: 20) {
 				
 				HStack {
 					Spacer()
@@ -49,16 +49,36 @@ struct ContentView: View {
 							.background {
 								Circle()
 									.foregroundStyle(.ultraThinMaterial)
-									.environment(\.colorScheme, .light)
+									.environment(\.colorScheme, .dark)
 							}
 							
 					}).buttonStyle(.plain)
 				}.padding(.horizontal, 20)
 				
+				if (viewModel.onDeviceClassification != nil) {
+					Text(viewModel.onDeviceClassification!)
+				}
+				
 				Spacer()
 				
+				HStack(spacing: 10) {
+					if (viewModel.presentingExternalClassificationOptions) {
+						ActionButton(symbol: "text.bubble", title: "Ask", action: {
+							print("Asking ChatGPT")
+						})
+						
+						ActionButton(symbol: "photo", title: "Search", action: {
+							print("Searching with Google")
+						})
+					} else {
+						//Other Options to come later...
+					}
+				}
+				
 				Button(action: {
-					viewModel.capture()
+					Task {
+						await viewModel.performLocalClassification()
+					}
 				}) {
 					ZStack {
 						Circle()
