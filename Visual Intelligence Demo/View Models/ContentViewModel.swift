@@ -8,6 +8,7 @@
 import Foundation
 import AVFoundation
 import SwiftUI
+import Vision
 
 extension ContentView {
 	
@@ -19,7 +20,7 @@ extension ContentView {
 		var presentingDeveloperOptions: Bool = false
 		
 		var classificationStatus: ClassifierStatus = .completed
-		var onDeviceClassification: String? = nil
+		var onDeviceClassification: LocalClassification? = nil
 		private var capturedImageContinuation: CheckedContinuation<Data, Error>?
 		enum CapturedDataConversionError: Error {
 			case failed
@@ -36,7 +37,7 @@ extension ContentView {
 		var capturedOutput = AVCapturePhotoOutput()
 		var capturedData: Data? = nil
 		
-		private func setup() {
+		private func setup () {
 			print("Setup")
 			do {
 				cameraSession.beginConfiguration()
@@ -101,7 +102,7 @@ extension ContentView {
 			capturedImageContinuation?.resume(returning: data)
 		}
 		
-		public func performLocalClassification() async {
+		public func performLocalClassification () async {
 			
 			onDeviceClassification = nil
 			
@@ -127,21 +128,89 @@ extension ContentView {
 				let sorted = output.targetProbability.sorted { $0.value > $1.value }
 				
 				if (sorted.first?.value ?? 0 > confidenceThreshold) {
-					onDeviceClassification = sorted.first!.key
+//					onDeviceClassification = sorted.first!.key
+					classificationStatus = .completed
 				} else {
 					withAnimation {
 						presentingExternalClassificationOptions = true
 					}
 				}
 				
-				classificationStatus = .completed
-				
 			} catch {
 				print("Error Prediciting: \(error.localizedDescription)")
 			}
 			
 		}
-
+		
+		public func cancelClassification () {
+			presentingExternalClassificationOptions = false
+			onDeviceClassification = nil
+			classificationStatus = .completed
+		}
+		
+		public func performVisionAnalysis () async {
+			
+			onDeviceClassification = nil
+			classificationStatus = .waiting
+			
+			do {
+				try await capture()
+				let mask = try await isolateImageSubject(data: capturedData!)
+				
+				let request = ClassifyImageRequest()
+				var results = try await request.perform(on: mask)
+				
+				results.sort(by: { $0.confidence > $1.confidence })
+				
+				let categories = [
+					"plant",
+					"flower",
+					"canine",
+					"dog",
+					"feline",
+					"animal",
+					"mammal",
+					"ungulates"
+				]
+				let filteredResults = results.filter({ !categories.contains($0.identifier) })
+				
+				let identifier = filteredResults.first?.identifier ?? ""
+				let classifications = LocalClassificationTypes()
+				
+				print(identifier)
+				
+				if let match = classifications.plants.first(where: { $0.name == identifier }) {
+					onDeviceClassification = match
+					print(classifications.plants.count)
+				}
+				
+				if let match = classifications.dogs.first(where: { $0.name == identifier }) {
+					onDeviceClassification = match
+				}
+				
+				if let match = classifications.animals.first(where: { $0.name == identifier }) {
+					onDeviceClassification = match
+					print(classifications.animals.count)
+				}
+				
+				if onDeviceClassification == nil {
+					presentingExternalClassificationOptions = true
+				}
+				
+			} catch {
+				print("Error")
+			}
+		}
+		
+		private func isolateImageSubject (data: Data) async throws -> CVPixelBuffer {
+			
+			let request = GenerateForegroundInstanceMaskRequest()
+			let result = try await request.perform(on: data)
+			let handler = ImageRequestHandler(data)
+			let mask = try result!.generateMaskedImage(for: result!.allInstances, imageFrom: handler)
+			
+			return mask
+		}
 		
 	}
 }

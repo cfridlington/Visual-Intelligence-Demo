@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "Alaskan_Malamute.jpg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

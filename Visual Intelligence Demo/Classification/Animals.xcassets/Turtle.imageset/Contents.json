@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "Green_Sea_Turtle_swimming.jpg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

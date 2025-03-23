@@ -54,6 +54,7 @@ struct WelcomeView: View {
 			.frame(maxWidth: .infinity)
 			.edgesIgnoringSafeArea(.all)
 			.background(.regularMaterial)
+			.environment(\.colorScheme, .dark)
 			.zIndex(1) //for animation in ZStack
     }
 }

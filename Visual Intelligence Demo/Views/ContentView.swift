@@ -49,14 +49,15 @@ struct ContentView: View {
 							.background {
 								Circle()
 									.foregroundStyle(.ultraThinMaterial)
-									.environment(\.colorScheme, .dark)
 							}
 							
 					}).buttonStyle(.plain)
+					.environment(\.colorScheme, .dark)
 				}.padding(.horizontal, 20)
 				
 				if (viewModel.onDeviceClassification != nil) {
-					Text(viewModel.onDeviceClassification!)
+					
+					OnDeviceKnowledgeView(classification: viewModel.onDeviceClassification!)
 				}
 				
 				Spacer()
@@ -76,14 +77,35 @@ struct ContentView: View {
 				}
 				
 				Button(action: {
-					Task {
-						await viewModel.performLocalClassification()
+					
+					if (viewModel.classificationStatus == .waiting || viewModel.onDeviceClassification != nil) {
+						viewModel.cancelClassification()
+					} else {
+						Task {
+//							await viewModel.performLocalClassification()
+							await viewModel.performVisionAnalysis()
+						}
 					}
 				}) {
 					ZStack {
-						Circle()
-							.fill(Color.white)
-							.frame(width: 50, height: 50)
+						
+						if (viewModel.classificationStatus == .waiting || viewModel.onDeviceClassification != nil) {
+							Image(systemName: "xmark")
+								.font(.system(size: 30))
+								.foregroundStyle(Color.white)
+								.glow(color: .white, radius: 30)
+								.background {
+									Circle()
+										.foregroundStyle(.ultraThinMaterial)
+										.environment(\.colorScheme, .dark)
+										.frame(width: 60, height: 60)
+										
+								}
+						} else {
+							Circle()
+								.foregroundStyle(.white)
+								.frame(width: 50, height: 50)
+						}
 						
 						Circle()
 							.stroke(Color.white, lineWidth: 2)

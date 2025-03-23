@@ -29,8 +29,8 @@ struct ActionButton: View {
 			.background {
 				Capsule()
 					.foregroundStyle(.ultraThinMaterial)
-					.environment(\.colorScheme, .dark)
 			}
+			.environment(\.colorScheme, .dark)
 		
 		
 		
