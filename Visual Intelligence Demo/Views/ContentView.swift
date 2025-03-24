@@ -56,16 +56,32 @@ struct ContentView: View {
 				}.padding(.horizontal, 20)
 				
 				if (viewModel.onDeviceClassification != nil) {
-					
 					OnDeviceKnowledgeView(classification: viewModel.onDeviceClassification!)
+				}
+				
+				if (viewModel.presentingEventView) {
+					CalendarEventView(presented: $viewModel.presentingEventView, title: viewModel.eventTitle, date: viewModel.eventDate)
+				}
+				
+				if (viewModel.openAIResponse != nil) {
+					OpenAIResponseView(response: viewModel.openAIResponse!)
 				}
 				
 				Spacer()
 				
 				HStack(spacing: 10) {
-					if (viewModel.presentingExternalClassificationOptions) {
+					
+					if (viewModel.eventDate != nil) {
+						ActionButton(symbol: "calendar", title: "Add to Calendar", action: {
+							withAnimation {
+								viewModel.presentingEventView = true
+							}
+						})
+					} else if (viewModel.presentingExternalClassificationOptions) {
 						ActionButton(symbol: "text.bubble", title: "Ask", action: {
-							print("Asking ChatGPT")
+							Task {
+								await viewModel.sendQueryToOpenAI()
+							}
 						})
 						
 						ActionButton(symbol: "photo", title: "Search", action: {
@@ -73,17 +89,19 @@ struct ContentView: View {
 						})
 					} else {
 						//Other Options to come later...
+						
 					}
 				}
 				
 				Button(action: {
 					
 					if (viewModel.classificationStatus == .waiting || viewModel.onDeviceClassification != nil) {
-						viewModel.cancelClassification()
+						viewModel.close()
 					} else {
 						Task {
 //							await viewModel.performLocalClassification()
 							await viewModel.performVisionAnalysis()
+							await viewModel.performTextAnalysis()
 						}
 					}
 				}) {
@@ -112,6 +130,11 @@ struct ContentView: View {
 							.frame(width: 60, height: 60)
 					}
 				}
+			}
+		}
+		.overlay {
+			if (viewModel.openAIQueryStatus == .waiting) {
+				IntelligenceGlow()
 			}
 		}
 		.sheet(isPresented: $viewModel.presentingHistory) {

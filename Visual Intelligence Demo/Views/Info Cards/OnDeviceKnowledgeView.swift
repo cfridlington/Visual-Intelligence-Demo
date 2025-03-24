@@ -69,11 +69,8 @@ struct OnDeviceKnowledgeView: View {
 			
 			
 			
-		}.padding(10)
-			.background(.regularMaterial)
-		.clipShape(RoundedRectangle(cornerRadius: 10))
-		.buttonStyle(.plain)
-		.padding()
+		}
+		.card()
 		.onAppear {
 			withAnimation(.bouncy.delay(1.5)) {
 				expanded = true
@@ -85,7 +82,7 @@ struct OnDeviceKnowledgeView: View {
 
 #Preview {
 	
-	let article = WikipediaArticle(title: "Labrador Retriever", category: "Dog Breed", link: URL(string: "https://en.wikipedia.org/wiki/Labrador_Retriever")!)
+	let article = WikipediaArticle(title: "Retriever", category: "Dog Breed", link: URL(string: "https://en.wikipedia.org/wiki/Labrador_Retriever")!)
 	let dog = LocalClassification(name: "retriever", description: "The Labrador Retriever or simply Labrador is a British breed of retriever gun dog. It was developed in the United Kingdom from St. John's water dogs imported from the colony of Newfoundland.", symbol: "dog.fill", wikipedia: article)
 	
 	GeometryReader { geometry in

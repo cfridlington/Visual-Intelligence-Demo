@@ -14,4 +14,13 @@ extension View {
 			.shadow(color: color, radius: radius / 3)
 			.shadow(color: color, radius: radius / 3)
 	}
+	
+	func card()  -> some View {
+		self
+			.padding(10)
+			.background(.regularMaterial)
+			.clipShape(RoundedRectangle(cornerRadius: 10))
+			.buttonStyle(.plain)
+			.padding()
+	}
 }
