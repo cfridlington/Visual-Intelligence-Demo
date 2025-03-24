@@ -63,6 +63,10 @@ struct ContentView: View {
 					CalendarEventView(presented: $viewModel.presentingEventView, title: viewModel.eventTitle, date: viewModel.eventDate)
 				}
 				
+				if (viewModel.presentingTextToSpeechView) {
+					TextToSpeechView(text: viewModel.allRecognizedText ?? "", playPause: viewModel.playPauseSpokenText)
+				}
+				
 				if (viewModel.openAIResponse != nil) {
 					OpenAIResponseView(response: viewModel.openAIResponse!)
 				}
@@ -76,6 +80,10 @@ struct ContentView: View {
 							withAnimation {
 								viewModel.presentingEventView = true
 							}
+						})
+					} else if (viewModel.allRecognizedText != nil) {
+						ActionButton(symbol: "speaker.wave.3.fill", title: "Read Text", action: {
+							viewModel.speakRecognizedText()
 						})
 					} else if (viewModel.presentingExternalClassificationOptions) {
 						ActionButton(symbol: "text.bubble", title: "Ask", action: {

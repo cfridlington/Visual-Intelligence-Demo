@@ -13,7 +13,7 @@ import Vision
 extension ContentView {
 	
 	@Observable
-	class ViewModel: NSObject, AVCapturePhotoCaptureDelegate {
+	class ViewModel: NSObject, AVCapturePhotoCaptureDelegate, AVSpeechSynthesizerDelegate {
 		
 		var presentingWelcome: Bool = true
 		var presentingHistory: Bool = false
@@ -47,6 +47,10 @@ extension ContentView {
 			Tell me some information about the subject of this image. Rather than describing the contents provide non-trivial information about the subject.
 		"""
 		var openAIResponse: OpenAIResponse? = nil
+		
+		let synthesizer = AVSpeechSynthesizer()
+		var allRecognizedText: String? = nil
+		var presentingTextToSpeechView: Bool = false
 		
 		private func setup () {
 			print("Setup")
@@ -173,11 +177,9 @@ extension ContentView {
 				
 				extractEventDetails(from: results)
 				
-//				if eventDate == nil {
-//					let allRecognizedLinesOfText = results.map({ $0.topCandidates(1).first?.string ?? "" })
-//					let allRecognizedText = allRecognizedLinesOfText.joined(separator: " ")
-//					print(allRecognizedText)
-//				}
+				let allRecognizedLinesOfText = results.map({ $0.topCandidates(1).first?.string ?? "" })
+				allRecognizedText = allRecognizedLinesOfText.joined(separator: " ")
+				
 				
 			} catch {
 				print("Error")
@@ -365,9 +367,53 @@ extension ContentView {
 			eventTitle = nil
 			openAIResponse = nil
 			openAIQueryStatus = .complete
+			allRecognizedText = nil
+			synthesizer.stopSpeaking(at: .immediate)
 			
 			presentingEventView = false
 			presentingExternalClassificationOptions = false
+			presentingTextToSpeechView = false
+		}
+		
+		public func speakRecognizedText() {
+			
+			synthesizer.delegate = self
+			presentingTextToSpeechView = true
+			
+			let audioSession = AVAudioSession.sharedInstance()
+			do {
+				try audioSession.setCategory(.playback, mode: .default, options: [])
+				try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
+
+				let utterance = AVSpeechUtterance(string: allRecognizedText ?? "")
+				
+				let availableVoices = AVSpeechSynthesisVoice.speechVoices()
+				var selectedVoice = AVSpeechSynthesisVoice()
+				
+				for voice in availableVoices {
+					
+					if voice.quality == .enhanced && voice.language == "en-US" {
+						selectedVoice = voice
+					}
+				}
+				
+				utterance.voice = selectedVoice
+				utterance.rate = 0.55
+				utterance.pitchMultiplier = 0.8
+				utterance.postUtteranceDelay = 0.2
+				synthesizer.speak(utterance)
+			} catch {
+				print("Error configuring audio session: \(error)")
+			}
+			
+		}
+		
+		public func playPauseSpokenText () {
+			if synthesizer.isPaused {
+				synthesizer.continueSpeaking()
+			} else if synthesizer.isSpeaking {
+				synthesizer.pauseSpeaking(at: .immediate)
+			}
 		}
 		
 	}
