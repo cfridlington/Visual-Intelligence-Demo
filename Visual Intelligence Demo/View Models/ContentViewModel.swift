@@ -19,7 +19,7 @@ extension ContentView {
 		var presentingHistory: Bool = false
 		var presentingDeveloperOptions: Bool = false
 		
-		var classificationStatus: ClassifierStatus = .completed
+		var classificationStatus: ClassifierStatus = .initial
 		var onDeviceClassification: LocalClassification? = nil
 		private var capturedImageContinuation: CheckedContinuation<Data, Error>?
 		enum CapturedDataConversionError: Error {
@@ -103,8 +103,6 @@ extension ContentView {
 		
 		public func capture () async throws {
 			
-			capturedData = nil
-			
 			capturedData = try await withCheckedThrowingContinuation { continuation in
 				capturedImageContinuation = continuation
 				self.capturedOutput.capturePhoto(with: AVCapturePhotoSettings(), delegate: self)
@@ -172,8 +170,6 @@ extension ContentView {
 		}
 		
 		public func performTextAnalysis () async {
-			
-			classificationStatus = .waiting
 			
 			do {
 				try await capture()
@@ -268,11 +264,10 @@ extension ContentView {
 		
 		public func performVisionAnalysis () async {
 			
-			onDeviceClassification = nil
-			classificationStatus = .waiting
-			
 			do {
 				try await capture()
+				
+				classificationStatus = .waiting
 				
 				let request = ClassifyImageRequest()
 				var results: ClassifyImageRequest.Result
@@ -301,11 +296,8 @@ extension ContentView {
 				let identifier = filteredResults.first?.identifier ?? ""
 				let classifications = LocalClassificationTypes()
 				
-				print(identifier)
-				
 				if let match = classifications.plants.first(where: { $0.name == identifier }) {
 					onDeviceClassification = match
-					print(classifications.plants.count)
 				}
 				
 				if let match = classifications.dogs.first(where: { $0.name == identifier }) {
@@ -314,11 +306,13 @@ extension ContentView {
 				
 				if let match = classifications.animals.first(where: { $0.name == identifier }) {
 					onDeviceClassification = match
-					print(classifications.animals.count)
 				}
 				
 				if onDeviceClassification == nil {
+					classificationStatus = .inputRequired
 					presentingExternalClassificationOptions = true
+				} else {
+					classificationStatus = .completed
 				}
 				
 			} catch {
@@ -382,8 +376,8 @@ extension ContentView {
 		}
 		
 		public func close () {
-			
-			classificationStatus = .completed
+		
+			classificationStatus = .initial
 			onDeviceClassification = nil
 			eventDate = nil
 			eventTitle = nil

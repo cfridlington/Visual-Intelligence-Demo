@@ -69,6 +69,7 @@ struct GoogleVisionPermissionView: View {
 			
 		}
 		.permissionOverlayBackground()
+		
 	}
 }
 

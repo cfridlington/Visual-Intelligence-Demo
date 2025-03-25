@@ -48,6 +48,8 @@ class Classifier: ObservableObject {
 }
 
 enum ClassifierStatus {
-	case completed
+	case initial
 	case waiting
+	case completed
+	case inputRequired
 }

@@ -21,16 +21,14 @@ struct DeveloperOptionsView: View {
 				Section("Permissions") {
 					
 					Toggle("OpenAI", isOn: $openAIPermission)
-						.fontWeight(.medium)
+					
 					Toggle("Google Vision", isOn: $googleVisionPermission)
-						.fontWeight(.medium)
 					
 				}
 				
 				Section("API Keys") {
 					VStack(alignment: .leading, spacing: 5) {
 						Text("OpenAI")
-							.fontWeight(.medium)
 						
 						Text("This API Key is used to authenticate request made to OpenAI's API. If you do not have a key, please contact Christopher or create a key in OpenAI's Developer Portal.")
 							.font(.caption)
@@ -48,7 +46,6 @@ struct DeveloperOptionsView: View {
 					}
 					VStack(alignment: .leading, spacing: 5) {
 						Text("Google Cloud Vision")
-							.fontWeight(.medium)
 						
 						Text("This API Key is used to authenticate request made to Google Cloud's Vision API. If you do not have a key, please contact Christopher or create a key in the Google Cloud Console.")
 							.font(.caption)

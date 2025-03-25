@@ -22,9 +22,31 @@ struct ContentView: View {
 
     var body: some View {
 		
-		ZStack {
+		ZStack(alignment: .center) {
 			CameraView(session: $viewModel.cameraSession, checkPermission: viewModel.checkPermissions)
 				.edgesIgnoringSafeArea(.all)
+		
+			if (viewModel.classificationStatus != .initial && viewModel.capturedData != nil) {
+				GeometryReader { geometry in
+					
+					let centerPoint = CGPoint(
+						x: geometry.size.width / 2,
+						y: geometry.size.height / 2
+					)
+					
+					let image = UIImage(data: viewModel.capturedData!)!
+					
+					Image(uiImage: image)
+						.resizable()
+						.scaledToFill()
+						.frame(maxWidth: .infinity, maxHeight: .infinity)
+						.position(x: UIScreen.main.bounds.width / 2, y: UIScreen.main.bounds.height / 2)
+						.edgesIgnoringSafeArea(.all)
+						.modifier(RippleEffect(at: centerPoint, trigger: viewModel.classificationStatus == .waiting))
+						.modifier(IntelligenceOverlay(status: $viewModel.classificationStatus))
+						
+				}.edgesIgnoringSafeArea(.all)
+			}
 			
 			if (viewModel.presentingWelcome) {
 				WelcomeView(isPresented: $viewModel.presentingWelcome)
@@ -58,9 +80,9 @@ struct ContentView: View {
 								Circle()
 									.foregroundStyle(.ultraThinMaterial)
 							}
-							
+						
 					}).buttonStyle(.plain)
-					.environment(\.colorScheme, .dark)
+						.environment(\.colorScheme, .dark)
 				}.padding(.horizontal, 20)
 				
 				if (viewModel.onDeviceClassification != nil) {
@@ -124,11 +146,11 @@ struct ContentView: View {
 				
 				Button(action: {
 					
-					if (viewModel.classificationStatus == .waiting || viewModel.onDeviceClassification != nil) {
+					if (viewModel.classificationStatus != .initial) {
 						viewModel.close()
 					} else {
 						Task {
-//							await viewModel.performLocalClassification()
+							//							await viewModel.performLocalClassification()
 							await viewModel.performVisionAnalysis()
 							await viewModel.performTextAnalysis()
 						}
@@ -136,7 +158,7 @@ struct ContentView: View {
 				}) {
 					ZStack {
 						
-						if (viewModel.classificationStatus == .waiting || viewModel.onDeviceClassification != nil) {
+						if (viewModel.classificationStatus != .initial) {
 							Image(systemName: "xmark")
 								.font(.system(size: 30))
 								.foregroundStyle(Color.white)
@@ -146,7 +168,7 @@ struct ContentView: View {
 										.foregroundStyle(.ultraThinMaterial)
 										.environment(\.colorScheme, .dark)
 										.frame(width: 60, height: 60)
-										
+									
 								}
 						} else {
 							Circle()
@@ -159,13 +181,16 @@ struct ContentView: View {
 							.frame(width: 60, height: 60)
 					}
 				}
+				
 			}
 		}
-		.overlay {
-			if (viewModel.openAIQueryStatus == .waiting) {
-				IntelligenceGlow()
-			}
-		}
+//		.overlay {
+//			if (viewModel.classificationStatus != .initial && viewModel.classificationStatus != .completed) {
+//				
+//				IntelligenceGlow()
+//					
+//			}
+//		}
 		.sheet(isPresented: $viewModel.presentingHistory) {
 			HistoryView()
 		}
