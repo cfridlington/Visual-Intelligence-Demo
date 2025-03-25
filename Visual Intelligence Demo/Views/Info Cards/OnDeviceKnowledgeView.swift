@@ -11,7 +11,7 @@ struct OnDeviceKnowledgeView: View {
 	
 	@State private var expanded: Bool = false
 	
-	var classification: LocalClassification
+	var classification: VisionClassificationKnowledge
 	
     var body: some View {
 		VStack(alignment: .leading, spacing: 10) {
@@ -83,7 +83,7 @@ struct OnDeviceKnowledgeView: View {
 #Preview {
 	
 	let article = WikipediaArticle(title: "Retriever", category: "Dog Breed", link: URL(string: "https://en.wikipedia.org/wiki/Labrador_Retriever")!)
-	let dog = LocalClassification(name: "retriever", description: "The Labrador Retriever or simply Labrador is a British breed of retriever gun dog. It was developed in the United Kingdom from St. John's water dogs imported from the colony of Newfoundland.", symbol: "dog.fill", wikipedia: article)
+	let dog = VisionClassificationKnowledge(name: "retriever", description: "The Labrador Retriever or simply Labrador is a British breed of retriever gun dog. It was developed in the United Kingdom from St. John's water dogs imported from the colony of Newfoundland.", symbol: "dog.fill", wikipedia: article)
 	
 	GeometryReader { geometry in
 	

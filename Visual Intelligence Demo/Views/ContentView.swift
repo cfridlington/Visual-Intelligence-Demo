@@ -15,7 +15,6 @@ struct ContentView: View {
 	@State private var viewModel = ViewModel()
 	
 	@StateObject var camera = CameraModel()
-	@StateObject var query = OpenAIQuery()
 	@StateObject var classifier = Classifier()
 	
 	@FocusState private var focused: Bool

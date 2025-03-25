@@ -1,5 +1,5 @@
 //
-//  Extensions.swift
+//  ImageProcessing.swift
 //  Visual Intelligence Demo
 //
 //  Created by Christopher Fridlington on 2/12/25.

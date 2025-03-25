@@ -20,7 +20,7 @@ extension ContentView {
 		var presentingDeveloperOptions: Bool = false
 		
 		var classificationStatus: ClassifierStatus = .initial
-		var onDeviceClassification: LocalClassification? = nil
+		var onDeviceClassification: VisionClassificationKnowledge? = nil
 		private var capturedImageContinuation: CheckedContinuation<Data, Error>?
 		enum CapturedDataConversionError: Error {
 			case failed
@@ -45,7 +45,6 @@ extension ContentView {
 		var eventTitle: String? = nil
 	
 		var presentingOpenAIPermissionsView: Bool = false
-		var openAIQueryStatus: OpenAIQueryStatus = .complete
 		var prompt: String = """
 			Tell me some information about the subject of this image. Rather than describing the contents provide non-trivial information about the subject.
 		"""
@@ -294,7 +293,7 @@ extension ContentView {
 				let filteredResults = results.filter({ !categories.contains($0.identifier) })
 				
 				let identifier = filteredResults.first?.identifier ?? ""
-				let classifications = LocalClassificationTypes()
+				let classifications = VisionClassificationKnowledgeBase()
 				
 				if let match = classifications.plants.first(where: { $0.name == identifier }) {
 					onDeviceClassification = match
@@ -357,18 +356,10 @@ extension ContentView {
 			request.setValue("Bearer \(accessKey)", forHTTPHeaderField: "Authorization")
 			request.httpMethod = "POST"
 			
-			withAnimation {
-				openAIQueryStatus = .waiting
-			}
-			
 			do {
 				let (data, _) = try await URLSession.shared.upload(for: request, from: encodedData)
 				
 				openAIResponse = try JSONDecoder().decode(OpenAIResponse.self, from: data)
-				
-				withAnimation {
-					openAIQueryStatus = .complete
-				}
 				
 			} catch {
 				print("request failed: \(error.localizedDescription)")
@@ -382,7 +373,6 @@ extension ContentView {
 			eventDate = nil
 			eventTitle = nil
 			openAIResponse = nil
-			openAIQueryStatus = .complete
 			allRecognizedText = nil
 			synthesizer.stopSpeaking(at: .immediate)
 			
@@ -474,10 +464,6 @@ extension ContentView {
 				let response = try JSONDecoder().decode(GoogleVisionResponse.self, from: data)
 				
 				googleSimilarImagesResponse = response
-				
-				withAnimation {
-					openAIQueryStatus = .complete
-				}
 				
 			} catch {
 				print("request failed: \(error.localizedDescription)")
