@@ -433,11 +433,16 @@ extension ContentView {
 		
 		public func requestSimilarImagesFromGoogle() async {
 			
+			guard let path = Bundle.main.path(forResource: "API-Keys", ofType: "plist") else { fatalError("Failed to get path for API Keys") }
+			let plistURL = URL(fileURLWithPath: path)
+			let plistData = try! Data(contentsOf: plistURL)
+			guard let plist = try! PropertyListSerialization.propertyList(from: plistData, options: .mutableContainers, format: nil) as? [String:String] else { fatalError("Failed to decode plist") }
+			guard let accessKey = plist["GoogleVision"] else { fatalError("Key not found in plist") }
+			
 			let requestData = GoogleVisionRequest(requests: [GoogleVisionRequestMessageContent(image: GoogleVisionRequestMessageImage(image: (maskedImage ?? UIImage(data: capturedData!))!), features: [GoogleVisionRequestMessageFeature(maxResults: 20)])])
 			guard let encodedData = try? JSONEncoder().encode(requestData) else { return }
 			
 			guard let bundleID = Bundle.main.bundleIdentifier else { return }
-			let accessKey = "AIzaSyCFu24pD1RTtVyfbfe8VjlQ4WTXALSX9n0"
 			
 			let url = URL(string: "https://vision.googleapis.com/v1/images:annotate")!
 			var request = URLRequest(url: url)
