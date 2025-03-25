@@ -9,7 +9,11 @@ import SwiftUI
 
 struct GoogleVisionPermissionView: View {
 	
+	@AppStorage("permissionGrantedGoogleVision") var permission: Bool = false
+	
 	@Binding var isPresented: Bool
+	
+	var continueRequest: () async -> Void
 	
 	var body: some View {
 	   
@@ -41,8 +45,12 @@ struct GoogleVisionPermissionView: View {
 			
 			VStack(spacing: 20) {
 				Button("Continue") {
-					withAnimation(.easeOut) {
-						isPresented = false
+					
+					permission = true
+					isPresented = false
+					
+					Task {
+						await continueRequest()
 					}
 				}
 				.permissionButton()
@@ -69,6 +77,6 @@ struct GoogleVisionPermissionView: View {
 		Image("desk")
 			.resizable()
 			.edgesIgnoringSafeArea(.all)
-		GoogleVisionPermissionView(isPresented: .constant(true))
+		GoogleVisionPermissionView(isPresented: .constant(true), continueRequest: {})
 	}
 }

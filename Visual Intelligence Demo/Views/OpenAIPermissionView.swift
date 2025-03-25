@@ -9,7 +9,11 @@ import SwiftUI
 
 struct OpenAIPermissionView: View {
 	
+	@AppStorage("permissionGrantedOpenAI") var permission: Bool = false
+	
 	@Binding var isPresented: Bool
+	
+	var continueRequest: () async -> Void
 	
 	var body: some View {
 	   
@@ -41,8 +45,12 @@ struct OpenAIPermissionView: View {
 			
 			VStack(spacing: 20) {
 				Button("Continue") {
-					withAnimation(.easeOut) {
-						isPresented = false
+					
+					permission = true
+					isPresented = false
+					
+					Task {
+						await continueRequest()
 					}
 				}
 				.permissionButton()
@@ -69,6 +77,6 @@ struct OpenAIPermissionView: View {
 		Image("desk")
 			.resizable()
 			.edgesIgnoringSafeArea(.all)
-		OpenAIPermissionView(isPresented: .constant(true))
+		OpenAIPermissionView(isPresented: .constant(true), continueRequest: {})
 	}
 }

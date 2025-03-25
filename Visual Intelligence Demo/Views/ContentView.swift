@@ -31,6 +31,14 @@ struct ContentView: View {
 					.animation(.easeOut, value: viewModel.presentingWelcome)
 			}
 			
+			if (viewModel.presentingOpenAIPermissionsView) {
+				OpenAIPermissionView(isPresented: $viewModel.presentingOpenAIPermissionsView, continueRequest: viewModel.sendQueryToOpenAI)
+			}
+			
+			if (viewModel.presentingGoogleVisionPermissionsView) {
+				GoogleVisionPermissionView(isPresented: $viewModel.presentingGoogleVisionPermissionsView, continueRequest: viewModel.requestSimilarImagesFromGoogle)
+			}
+			
 			VStack(spacing: 20) {
 				
 				HStack {
@@ -162,7 +170,7 @@ struct ContentView: View {
 			HistoryView()
 		}
 		.sheet(isPresented: $viewModel.presentingDeveloperOptions) {
-			Text("Developer Options Coming Soon")
+			DeveloperOptionsView()
 		}
 		
 		

@@ -44,6 +44,7 @@ extension ContentView {
 		var eventDate: Date? = nil
 		var eventTitle: String? = nil
 	
+		var presentingOpenAIPermissionsView: Bool = false
 		var openAIQueryStatus: OpenAIQueryStatus = .complete
 		var prompt: String = """
 			Tell me some information about the subject of this image. Rather than describing the contents provide non-trivial information about the subject.
@@ -54,8 +55,10 @@ extension ContentView {
 		var allRecognizedText: String? = nil
 		var presentingTextToSpeechView: Bool = false
 		
+		var presentingGoogleVisionPermissionsView: Bool = false
 		var presentingGoogleSimilarImages: Bool = false
 		var googleSimilarImagesResponse: GoogleVisionResponse? = nil
+		
 		
 		private func setup () {
 			print("Setup")
@@ -335,6 +338,13 @@ extension ContentView {
 		
 		public func sendQueryToOpenAI () async {
 			
+			let permissionGranted = UserDefaults.standard.bool(forKey: "permissionGrantedOpenAI")
+			
+			if !permissionGranted {
+				presentingOpenAIPermissionsView = true
+				return
+			}
+			
 			guard let path = Bundle.main.path(forResource: "API-Keys", ofType: "plist") else { fatalError("Failed to get path for API Keys") }
 			let plistURL = URL(fileURLWithPath: path)
 			let plistData = try! Data(contentsOf: plistURL)
@@ -432,6 +442,13 @@ extension ContentView {
 		}
 		
 		public func requestSimilarImagesFromGoogle() async {
+			
+			let permissionGranted = UserDefaults.standard.bool(forKey: "permissionGrantedGoogleVision")
+			
+			if !permissionGranted {
+				presentingGoogleVisionPermissionsView = true
+				return
+			}
 			
 			guard let path = Bundle.main.path(forResource: "API-Keys", ofType: "plist") else { fatalError("Failed to get path for API Keys") }
 			let plistURL = URL(fileURLWithPath: path)
