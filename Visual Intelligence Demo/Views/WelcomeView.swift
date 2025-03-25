@@ -37,25 +37,12 @@ struct WelcomeView: View {
 					isPresented = false
 				}
 			}
-			.buttonStyle(.plain)
-			.fontWeight(.medium)
-			.padding(.vertical, 6)
-			.padding(.horizontal, 12)
-			.background {
-				Capsule()
-					.foregroundStyle(.ultraThinMaterial)
-					.environment(\.colorScheme, .light)
-			}
+			.permissionButton()
 			
 			Spacer()
 			
 		}
-			.padding(40)
-			.frame(maxWidth: .infinity)
-			.edgesIgnoringSafeArea(.all)
-			.background(.regularMaterial)
-			.environment(\.colorScheme, .dark)
-			.zIndex(1) //for animation in ZStack
+		.permissionOverlayBackground()
     }
 }
 

@@ -37,6 +37,8 @@ extension ContentView {
 		var capturedOutput = AVCapturePhotoOutput()
 		var capturedData: Data? = nil
 		
+		var maskedImage: UIImage? = nil
+		
 		var presentingEventView: Bool = false
 		
 		var eventDate: Date? = nil
@@ -51,6 +53,9 @@ extension ContentView {
 		let synthesizer = AVSpeechSynthesizer()
 		var allRecognizedText: String? = nil
 		var presentingTextToSpeechView: Bool = false
+		
+		var presentingGoogleSimilarImages: Bool = false
+		var googleSimilarImagesResponse: GoogleVisionResponse? = nil
 		
 		private func setup () {
 			print("Setup")
@@ -177,9 +182,10 @@ extension ContentView {
 				
 				extractEventDetails(from: results)
 				
-				let allRecognizedLinesOfText = results.map({ $0.topCandidates(1).first?.string ?? "" })
-				allRecognizedText = allRecognizedLinesOfText.joined(separator: " ")
-				
+				if !results.isEmpty {
+					let allRecognizedLinesOfText = results.map({ $0.topCandidates(1).first?.string ?? "" })
+					allRecognizedText = allRecognizedLinesOfText.joined(separator: " ")
+				}
 				
 			} catch {
 				print("Error")
@@ -264,10 +270,16 @@ extension ContentView {
 			
 			do {
 				try await capture()
-				let mask = try await isolateImageSubject(data: capturedData!)
 				
 				let request = ClassifyImageRequest()
-				var results = try await request.perform(on: mask)
+				var results: ClassifyImageRequest.Result
+				
+				if let mask = try await isolateImageSubject(data: capturedData!) {
+					maskedImage = UIImage(pixelBuffer: mask)
+					results = try await request.perform(on: mask)
+				} else {
+					results = try await request.perform(on: capturedData!)
+				}
 				
 				results.sort(by: { $0.confidence > $1.confidence })
 				
@@ -311,12 +323,12 @@ extension ContentView {
 			}
 		}
 		
-		private func isolateImageSubject (data: Data) async throws -> CVPixelBuffer {
+		private func isolateImageSubject (data: Data) async throws -> CVPixelBuffer? {
 			
 			let request = GenerateForegroundInstanceMaskRequest()
 			let result = try await request.perform(on: data)
 			let handler = ImageRequestHandler(data)
-			let mask = try result!.generateMaskedImage(for: result!.allInstances, imageFrom: handler)
+			let mask = try result?.generateMaskedImage(for: result?.allInstances ?? [], imageFrom: handler)
 			
 			return mask
 		}
@@ -373,6 +385,9 @@ extension ContentView {
 			presentingEventView = false
 			presentingExternalClassificationOptions = false
 			presentingTextToSpeechView = false
+			
+			presentingGoogleSimilarImages = false
+			googleSimilarImagesResponse = nil
 		}
 		
 		public func speakRecognizedText() {
@@ -414,6 +429,46 @@ extension ContentView {
 			} else if synthesizer.isSpeaking {
 				synthesizer.pauseSpeaking(at: .immediate)
 			}
+		}
+		
+		public func requestSimilarImagesFromGoogle() async {
+			
+			let requestData = GoogleVisionRequest(requests: [GoogleVisionRequestMessageContent(image: GoogleVisionRequestMessageImage(image: (maskedImage ?? UIImage(data: capturedData!))!), features: [GoogleVisionRequestMessageFeature(maxResults: 20)])])
+			guard let encodedData = try? JSONEncoder().encode(requestData) else { return }
+			
+			guard let bundleID = Bundle.main.bundleIdentifier else { return }
+			let accessKey = "AIzaSyCFu24pD1RTtVyfbfe8VjlQ4WTXALSX9n0"
+			
+			let url = URL(string: "https://vision.googleapis.com/v1/images:annotate")!
+			var request = URLRequest(url: url)
+			request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+			request.setValue("\(accessKey)", forHTTPHeaderField: "X-goog-api-key")
+			request.setValue("\(bundleID)", forHTTPHeaderField: "X-Ios-Bundle-Identifier")
+			request.httpMethod = "POST"
+			
+			do {
+				let (data, _) = try await URLSession.shared.upload(for: request, from: encodedData)
+				
+				print(data)
+				
+				if let str = String(data: data, encoding: .utf8) {
+					print("Successfully decoded: \(str)")
+				}
+				
+				let response = try JSONDecoder().decode(GoogleVisionResponse.self, from: data)
+				
+				googleSimilarImagesResponse = response
+				
+				withAnimation {
+					openAIQueryStatus = .complete
+				}
+				
+			} catch {
+				print("request failed: \(error.localizedDescription)")
+			}
+			
+			
+			presentingGoogleSimilarImages = true
 		}
 		
 	}

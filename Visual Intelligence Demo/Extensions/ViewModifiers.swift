@@ -23,4 +23,27 @@ extension View {
 			.buttonStyle(.plain)
 			.padding()
 	}
+	
+	func permissionButton() -> some View {
+		self
+			.buttonStyle(.plain)
+			.fontWeight(.medium)
+			.padding(.vertical, 6)
+			.padding(.horizontal, 12)
+			.background {
+				Capsule()
+					.foregroundStyle(.ultraThinMaterial)
+					.environment(\.colorScheme, .light)
+			}
+	}
+	
+	func permissionOverlayBackground() -> some View {
+		self
+			.padding(40)
+			.frame(maxWidth: .infinity)
+			.edgesIgnoringSafeArea(.all)
+			.background(.regularMaterial)
+			.environment(\.colorScheme, .dark)
+			.zIndex(1)
+	}
 }

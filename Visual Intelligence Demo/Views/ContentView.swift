@@ -71,33 +71,46 @@ struct ContentView: View {
 					OpenAIResponseView(response: viewModel.openAIResponse!)
 				}
 				
+				if (viewModel.presentingGoogleSimilarImages) {
+					GoogleSimilarImagesView(results: viewModel.googleSimilarImagesResponse)
+				}
+				
 				Spacer()
 				
-				HStack(spacing: 10) {
-					
-					if (viewModel.eventDate != nil) {
-						ActionButton(symbol: "calendar", title: "Add to Calendar", action: {
-							withAnimation {
-								viewModel.presentingEventView = true
-							}
-						})
-					} else if (viewModel.allRecognizedText != nil) {
-						ActionButton(symbol: "speaker.wave.3.fill", title: "Read Text", action: {
-							viewModel.speakRecognizedText()
-						})
-					} else if (viewModel.presentingExternalClassificationOptions) {
-						ActionButton(symbol: "text.bubble", title: "Ask", action: {
-							Task {
-								await viewModel.sendQueryToOpenAI()
-							}
-						})
+				if (
+					!viewModel.presentingGoogleSimilarImages &&
+					!viewModel.presentingEventView &&
+					!viewModel.presentingTextToSpeechView
+				) {
+					HStack(spacing: 10) {
 						
-						ActionButton(symbol: "photo", title: "Search", action: {
-							print("Searching with Google")
-						})
-					} else {
-						//Other Options to come later...
+						if (viewModel.presentingExternalClassificationOptions) {
+							ActionButton(symbol: "text.bubble", title: "Ask", action: {
+								Task {
+									await viewModel.sendQueryToOpenAI()
+								}
+							})
+							
+							ActionButton(symbol: "photo", title: "Search", action: {
+								Task {
+									await viewModel.requestSimilarImagesFromGoogle()
+								}
+							})
+						}
 						
+						if (viewModel.eventDate != nil) {
+							ActionButton(symbol: "calendar", title: "Add to Calendar", action: {
+								withAnimation {
+									viewModel.presentingEventView = true
+								}
+							})
+						}
+						
+						if (viewModel.allRecognizedText != nil) {
+							ActionButton(symbol: "speaker.wave.3.fill", title: "Read Text", action: {
+								viewModel.speakRecognizedText()
+							})
+						}
 					}
 				}
 				

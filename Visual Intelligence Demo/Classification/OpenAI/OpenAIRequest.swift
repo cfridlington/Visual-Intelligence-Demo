@@ -1,5 +1,5 @@
 //
-//  Request.swift
+//  OpenAIRequest.swift
 //  Visual Intelligence Demo
 //
 //  Created by Christopher Fridlington on 2/12/25.
@@ -98,14 +98,32 @@ class OpenAIResponse: Decodable, Equatable {
 		return lhs.id == rhs.id
 	}
 	
+	init(id: String, object: String, created: Int, model: String, choices: [OpenAIResponseChoice]) {
+		self.id = id
+		self.object = object
+		self.created = created
+		self.model = model
+		self.choices = choices
+	}
+	
 }
 
 class OpenAIResponseChoice: Decodable {
 	let index: Int
 	let message: OpenAIResponseMessage
+	
+	init(index: Int, message: OpenAIResponseMessage) {
+		self.index = index
+		self.message = message
+	}
 }
 
 class OpenAIResponseMessage: Decodable {
 	let role: String
 	let content: String
+	
+	init(role: String, content: String) {
+		self.role = role
+		self.content = content
+	}
 }

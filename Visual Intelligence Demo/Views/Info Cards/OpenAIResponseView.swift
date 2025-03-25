@@ -45,5 +45,10 @@ struct OpenAIResponseView: View {
 }
 
 #Preview {
-//	OpenAIResponseView(response: OpenAIResponse)
+	
+	let choices = [OpenAIResponseChoice(index: 1, message: OpenAIResponseMessage(role: "agent", content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."))]
+	let response = OpenAIResponse(id: UUID().uuidString, object: "", created: 0, model: "gpt-4o-mini", choices: choices)
+	
+	OpenAIResponseView(response: response)
+	
 }
