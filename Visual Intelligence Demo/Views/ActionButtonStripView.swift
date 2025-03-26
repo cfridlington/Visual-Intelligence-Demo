@@ -7,12 +7,12 @@
 
 import SwiftUI
 
-struct ActionStripView: View {
+struct ActionButtonStripView: View {
 	
 	@Binding var viewModel: ContentViewModel
 	
     var body: some View {
-		HStack(spacing: 10) {
+		HStack(spacing: 0) {
 			
 			if (viewModel.presentingExternalClassificationOptions) {
 				ActionButton(symbol: "text.bubble", title: "Ask", action: {
@@ -28,18 +28,44 @@ struct ActionStripView: View {
 				})
 			}
 			
-			if (viewModel.eventDate != nil) {
-				ActionButton(symbol: "calendar", title: "Add to Calendar", action: {
-					withAnimation {
-						viewModel.presentingEventView = true
+			if (viewModel.eventDate != nil && viewModel.allRecognizedText != nil && viewModel.presentingExternalClassificationOptions) {
+				
+				Menu(content: {
+					Button("Add to Calendar", systemImage: "calendar") {
+						withAnimation {
+							viewModel.presentingEventView = true
+						}
 					}
-				})
-			}
-			
-			if (viewModel.allRecognizedText != nil) {
-				ActionButton(symbol: "speaker.wave.3.fill", title: "Read Text", action: {
-					viewModel.speakRecognizedText()
-				})
+					Button("Read Text", systemImage: "speaker.wave.3.fill") {
+						viewModel.speakRecognizedText()
+					}
+				}, label: {
+					Image(systemName: "ellipsis")
+						.padding(12)
+						.background {
+							Circle()
+								.foregroundStyle(.ultraThinMaterial)
+						}
+						.padding(.horizontal, 0)
+					
+				}).buttonStyle(.plain)
+				.padding(.horizontal, 0)
+				.environment(\.colorScheme, .dark)
+				
+			} else {
+				if (viewModel.eventDate != nil) {
+					ActionButton(symbol: "calendar", title: "Add to Calendar", action: {
+						withAnimation {
+							viewModel.presentingEventView = true
+						}
+					})
+				}
+				
+				if (viewModel.allRecognizedText != nil) {
+					ActionButton(symbol: "speaker.wave.3.fill", title: "Read Text", action: {
+						viewModel.speakRecognizedText()
+					})
+				}
 			}
 		}
     }
@@ -53,7 +79,7 @@ struct ActionStripView: View {
 		
 		Spacer()
 		
-		ActionStripView(viewModel: .constant(contentViewModel))
+		ActionButtonStripView(viewModel: .constant(contentViewModel))
 		
 		Spacer()
 		

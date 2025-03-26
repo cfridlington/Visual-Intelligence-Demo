@@ -14,18 +14,9 @@ struct CameraControlsView: View {
     var body: some View {
 		HStack(alignment: .center, spacing: 40) {
 			
-			Button(action: {
-				
-			}) {
-				Image(systemName: "text.bubble")
-					.font(.system(size: 20))
-					.foregroundStyle(Color.white)
-					.padding(10)
-					.background {
-						Circle()
-							.fill(.ultraThinMaterial)
-					}
-			}.buttonStyle(PlainButtonStyle())
+			if (viewModel.classificationStatus == .initial) {
+				SecondaryControlButton(symbol: "text.bubble", title: "Ask", action: {})
+			}
 		
 			Button(action: {
 				
@@ -64,19 +55,11 @@ struct CameraControlsView: View {
 				}
 			}
 			
-			Button(action: {
-				
-			}) {
-				Image(systemName: "photo")
-					.font(.system(size: 20))
-					.foregroundStyle(Color.white)
-					.padding(10)
-					.background {
-						Circle()
-							.fill(.ultraThinMaterial)
-					}
-			}.buttonStyle(PlainButtonStyle())
+			if (viewModel.classificationStatus == .initial) {
+				SecondaryControlButton(symbol: "photo", title: "Search", action: {})
+			}
 		}
+		.padding(.bottom, 20)
     }
 }
 

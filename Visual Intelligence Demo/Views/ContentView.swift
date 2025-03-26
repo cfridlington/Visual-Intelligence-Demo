@@ -84,7 +84,7 @@ struct ContentView: View {
 					!viewModel.presentingEventView &&
 					!viewModel.presentingTextToSpeechView
 				) {
-					ActionStripView(viewModel: $viewModel)
+					ActionButtonStripView(viewModel: $viewModel)
 				}
 				
 				CameraControlsView(viewModel: $viewModel)

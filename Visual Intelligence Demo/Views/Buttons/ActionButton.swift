@@ -31,6 +31,7 @@ struct ActionButton: View {
 					.foregroundStyle(.ultraThinMaterial)
 			}
 			.environment(\.colorScheme, .dark)
+			.padding(.horizontal, 5)
 		
 		
 		
