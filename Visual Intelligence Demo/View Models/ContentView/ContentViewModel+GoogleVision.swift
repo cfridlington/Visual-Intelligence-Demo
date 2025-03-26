@@ -17,11 +17,15 @@ extension ContentViewModel {
 			return
 		}
 		
-		guard let path = Bundle.main.path(forResource: "API-Keys", ofType: "plist") else { fatalError("Failed to get path for API Keys") }
-		let plistURL = URL(fileURLWithPath: path)
-		let plistData = try! Data(contentsOf: plistURL)
-		guard let plist = try! PropertyListSerialization.propertyList(from: plistData, options: .mutableContainers, format: nil) as? [String:String] else { fatalError("Failed to decode plist") }
-		guard let accessKey = plist["GoogleVision"] else { fatalError("Key not found in plist") }
+		guard let accessKey = UserDefaults.standard.object(forKey:"googleVisionAPIKey") as? String else {
+			googleVisionMissingAPIAlert = true
+			return
+		}
+		
+		if accessKey == "" {
+			googleVisionMissingAPIAlert = true
+			return
+		}
 		
 		let requestData = GoogleVisionRequest(requests: [GoogleVisionRequestMessageContent(image: GoogleVisionRequestMessageImage(image: (maskedImage ?? UIImage(data: capturedData!))!), features: [GoogleVisionRequestMessageFeature(maxResults: 20)])])
 		guard let encodedData = try? JSONEncoder().encode(requestData) else { return }

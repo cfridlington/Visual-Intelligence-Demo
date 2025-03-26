@@ -8,6 +8,7 @@
 import SwiftUI
 
 extension ContentViewModel {
+	
 	public func sendQueryToOpenAI () async {
 		
 		let permissionGranted = UserDefaults.standard.bool(forKey: "permissionGrantedOpenAI")
@@ -17,13 +18,17 @@ extension ContentViewModel {
 			return
 		}
 		
-		guard let path = Bundle.main.path(forResource: "API-Keys", ofType: "plist") else { fatalError("Failed to get path for API Keys") }
-		let plistURL = URL(fileURLWithPath: path)
-		let plistData = try! Data(contentsOf: plistURL)
-		guard let plist = try! PropertyListSerialization.propertyList(from: plistData, options: .mutableContainers, format: nil) as? [String:String] else { fatalError("Failed to decode plist") }
-		guard let accessKey = plist["OpenAI"] else { fatalError("Key not found in plist") }
+		guard let accessKey = UserDefaults.standard.object(forKey:"openAIAPIKey") as? String else {
+			openAIMissingAPIAlert = true
+			return
+		}
 		
-		let text = prompt + question == "" ? "" : " Please also tailor the information to answer the following: \(question)"
+		if accessKey == "" {
+			openAIMissingAPIAlert = true
+			return
+		}
+		
+		let text = prompt + openAIQuestion == "" ? "" : " Please also tailor the information to answer the following: \(openAIQuestion)"
 		guard let image = UIImage(data: capturedData!) else { return }
 		
 		let data = OpenAIRequest(model: "gpt-4o-mini", messages: [OpenAIRequestMessage(content: [OpenAIRequestMessageContentText(text: text), OpenAIRequestMessageContentImage(image: image)])])
@@ -41,6 +46,7 @@ extension ContentViewModel {
 			openAIResponse = try JSONDecoder().decode(OpenAIResponse.self, from: data)
 			
 		} catch {
+			openAIAPIError = true
 			print("request failed: \(error.localizedDescription)")
 		}
 	}

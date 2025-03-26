@@ -97,6 +97,46 @@ struct ContentView: View {
 		.sheet(isPresented: $viewModel.presentingDeveloperOptions) {
 			DeveloperOptionsView()
 		}
+		.alert("API Key Required for OpenAI", isPresented: $viewModel.openAIMissingAPIAlert) {
+			
+			Button("Add in Developer Options", role: .none) {
+				withAnimation {
+					viewModel.presentingDeveloperOptions = true
+					viewModel.openAIMissingAPIAlert = false
+				}
+			}
+			
+			Link("Request a Demo API Key", destination: URL(string: "https://www.cfridlington.com/contact")!)
+			
+			Button("Cancel", role: .cancel) { }
+		} message: {
+			Text("An API Key is required to use OpenAI. This can be obtained in the OpenAI Developer Portal. Alternatively, you may request a demo API Key from Christopher Fridlington.")
+		}
+		.alert("API Key Required for Google Vision", isPresented: $viewModel.googleVisionMissingAPIAlert) {
+			
+			Button("Add in Developer Options", role: .none) {
+				withAnimation {
+					viewModel.presentingDeveloperOptions = true
+					viewModel.googleVisionMissingAPIAlert = false
+				}
+			}
+			
+			Link("Request a Demo API Key", destination: URL(string: "https://www.cfridlington.com/contact")!)
+			
+			Button("Cancel", role: .cancel) { }
+		} message: {
+			Text("An API Key is required to use the Google Vision. This can be obtained in the Google Cloud Console. Alternatively, you may request a demo API Key from Christopher Fridlington.")
+		}
+		.alert("OpenAI API Error", isPresented: $viewModel.openAIAPIError) {
+			Button("Dismiss", role: .cancel) { }
+		} message: {
+			Text("An error occured when attempting to communicate with the OpenAI API. Please confirm the entered API Key is correct.")
+		}
+		.alert("Google Vision API Error", isPresented: $viewModel.googleVisionAPIError) {
+			Button("Dismiss", role: .cancel) { }
+		} message: {
+			Text("An error occured when attempting to communicate with the Google Vision API. Please confirm the entered API Key is correct.")
+		}
     }
 }
 
