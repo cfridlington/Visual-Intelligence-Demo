@@ -22,9 +22,9 @@ struct DeveloperOptionsView: View {
 			List {
 				Section("Permissions") {
 					
-					Toggle("OpenAI", isOn: $openAIPermission)
+					Toggle("Allow OpenAI", isOn: $openAIPermission)
 					
-					Toggle("Google Vision", isOn: $googleVisionPermission)
+					Toggle("Allow Google Vision", isOn: $googleVisionPermission)
 					
 				}
 				
