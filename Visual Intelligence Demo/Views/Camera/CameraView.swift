@@ -8,7 +8,7 @@
 import SwiftUI
 import AVFoundation
 
-struct CameraView: UIViewRepresentable {
+struct CameraFeedPreview: UIViewRepresentable {
 	
 	@Binding var session: AVCaptureSession
 	var checkPermission: () -> Void
@@ -34,7 +34,3 @@ struct CameraView: UIViewRepresentable {
 	}
 	
 }
-
-//#Preview {
-//    CameraView()
-//}
