@@ -10,6 +10,7 @@ import SwiftData
 
 struct HistoryView: View {
 	
+	@Environment(\.dismiss) private var dismiss
 	@Environment(\.modelContext) private var modelContext
 	@Query(sort: \Item.timestamp, order: .reverse) private var items: [Item]
 	
@@ -40,6 +41,15 @@ struct HistoryView: View {
 			}
 			.navigationTitle("History")
 			.navigationBarTitleDisplayMode(.inline)
+			.toolbar(content: {
+				ToolbarItem(placement: .topBarTrailing) {
+					
+					Button("Done") {
+						dismiss()
+					}
+					
+				}
+			})
 		}
     }
 	

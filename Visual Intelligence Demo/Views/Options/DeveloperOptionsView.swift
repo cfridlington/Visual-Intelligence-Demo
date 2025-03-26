@@ -9,6 +9,8 @@ import SwiftUI
 
 struct DeveloperOptionsView: View {
 	
+	@Environment(\.dismiss) private var dismiss
+	
 	@AppStorage("permissionGrantedOpenAI") var openAIPermission: Bool = false
 	@AppStorage("permissionGrantedGoogleVision") var googleVisionPermission: Bool = false
 	
@@ -100,6 +102,15 @@ struct DeveloperOptionsView: View {
 				}
 			}.navigationTitle("Developer Options")
 				.navigationBarTitleDisplayMode(.inline)
+				.toolbar(content: {
+					ToolbarItem(placement: .topBarTrailing) {
+						
+						Button("Done") {
+							dismiss()
+						}
+						
+					}
+				})
 		}
     }
 }
