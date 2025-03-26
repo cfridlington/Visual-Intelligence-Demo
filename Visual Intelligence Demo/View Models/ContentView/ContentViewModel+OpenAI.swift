@@ -28,6 +28,10 @@ extension ContentViewModel {
 			return
 		}
 		
+		classificationStatus = .awaitingOpenAIResponse
+		
+		let prompt = UserDefaults.standard.object(forKey:"openAIAPIKey") as? String ?? "Tell me some information about the subject of this image. Rather than describing the contents provide non-trivial information about the subject."
+		
 		let text = prompt + openAIQuestion == "" ? "" : " Please also tailor the information to answer the following: \(openAIQuestion)"
 		guard let image = UIImage(data: capturedData!) else { return }
 		
@@ -43,7 +47,9 @@ extension ContentViewModel {
 		do {
 			let (data, _) = try await URLSession.shared.upload(for: request, from: encodedData)
 			
-			openAIResponse = try JSONDecoder().decode(OpenAIResponse.self, from: data)
+			let response = try JSONDecoder().decode(OpenAIResponse.self, from: data)
+			classificationStatus = .completed
+			openAIResponse = response
 			
 		} catch {
 			openAIAPIError = true

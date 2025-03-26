@@ -9,6 +9,15 @@ import Foundation
 import AVFoundation
 import SwiftUI
 
+enum ClassifierStatus {
+	case initial
+	case waiting
+	case completed
+	case inputRequired
+	case awaitingOpenAIResponse
+	case awaitingGoogleVisionResponse
+}
+
 @Observable
 class ContentViewModel: NSObject, AVCapturePhotoCaptureDelegate {
 	
@@ -17,9 +26,11 @@ class ContentViewModel: NSObject, AVCapturePhotoCaptureDelegate {
 	var presentingHistory: Bool = false
 	var presentingDeveloperOptions: Bool = false
 	
+	// MARK: Status
+	var classificationStatus: ClassifierStatus = .initial
+	
 	// MARK: Vision
 	var presentingExternalClassificationOptions: Bool = false
-	var classificationStatus: ClassifierStatus = .initial
 	var onDeviceClassification: VisionClassificationKnowledge? = nil
 	
 	// MARK: Camera
@@ -46,9 +57,6 @@ class ContentViewModel: NSObject, AVCapturePhotoCaptureDelegate {
 	
 	// MARK: OpenAI
 	var presentingOpenAIPermissionsView: Bool = false
-	var prompt: String = """
-   Tell me some information about the subject of this image. Rather than describing the contents provide non-trivial information about the subject.
-  """
 	var openAIResponse: OpenAIResponse? = nil
 	var askingOpenAIQuestion: Bool = false
 	var openAIQuestion: String = ""

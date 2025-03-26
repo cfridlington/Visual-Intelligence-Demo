@@ -15,6 +15,8 @@ struct DeveloperOptionsView: View {
 	@AppStorage("openAIAPIKey") var openAIAPIKey: String = ""
 	@AppStorage("googleVisionAPIKey") var googleVisionAPIKey: String = ""
 	
+	@AppStorage("openAIPrompt") var openAIPrompt: String = "Tell me some information about the subject of this image. Rather than describing the contents provide non-trivial information about the subject."
+	
     var body: some View {
 		NavigationStack {
 			List {
@@ -37,7 +39,7 @@ struct DeveloperOptionsView: View {
 						TextField("", text: $openAIAPIKey)
 							.fontDesign(.monospaced)
 							.font(.caption)
-							.fontWeight(.bold)
+							.fontWeight(.medium)
 							.padding(5)
 							.background {
 								RoundedRectangle(cornerRadius: 5)
@@ -54,7 +56,27 @@ struct DeveloperOptionsView: View {
 						TextField("", text: $googleVisionAPIKey)
 							.fontDesign(.monospaced)
 							.font(.caption)
-							.fontWeight(.bold)
+							.fontWeight(.medium)
+							.padding(5)
+							.background {
+								RoundedRectangle(cornerRadius: 5)
+									.foregroundStyle(.ultraThickMaterial)
+							}
+					}
+				}
+				
+				Section("OpenAI Prompt") {
+					VStack(alignment: .leading, spacing: 5) {
+						Text("Customize Prompt")
+						
+						Text("Modify this prompt to tune the response provided from OpenAI.")
+							.font(.caption)
+							.foregroundStyle(.secondary)
+						
+						TextField("Prompt", text: $openAIPrompt, axis: .vertical)
+							.fontDesign(.monospaced)
+							.font(.caption)
+							.fontWeight(.medium)
 							.padding(5)
 							.background {
 								RoundedRectangle(cornerRadius: 5)
@@ -65,7 +87,10 @@ struct DeveloperOptionsView: View {
 				
 				Section("Credits") {
 					VStack(alignment: .leading, spacing: 5) {
-						Text("Christopher is an iOS Developer with a passion for all things design and technology. He believes great work happens at the intersection of technology and the liberal arts.\n\nHe received his BA in Computer Science & Architecture from Middlebury College.")
+						
+						Text("Created by Christopher Fridlington")
+						
+						Text("Christopher is an iOS Developer with a passion for all things design and technology. He believes great work happens at the intersection of technology and the liberal arts. He received his BA in Computer Science & Architecture from Middlebury College.")
 							.font(.caption)
 							.foregroundStyle(.secondary)
 						

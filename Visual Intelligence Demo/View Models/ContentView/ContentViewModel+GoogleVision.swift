@@ -27,6 +27,8 @@ extension ContentViewModel {
 			return
 		}
 		
+		classificationStatus = .awaitingGoogleVisionResponse
+		
 		let requestData = GoogleVisionRequest(requests: [GoogleVisionRequestMessageContent(image: GoogleVisionRequestMessageImage(image: (maskedImage ?? UIImage(data: capturedData!))!), features: [GoogleVisionRequestMessageFeature(maxResults: 20)])])
 		guard let encodedData = try? JSONEncoder().encode(requestData) else { return }
 		
@@ -50,6 +52,7 @@ extension ContentViewModel {
 			
 			let response = try JSONDecoder().decode(GoogleVisionResponse.self, from: data)
 			
+			classificationStatus = .completed
 			googleSimilarImagesResponse = response
 			
 		} catch {

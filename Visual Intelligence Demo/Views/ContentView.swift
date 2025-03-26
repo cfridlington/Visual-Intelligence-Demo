@@ -77,6 +77,16 @@ struct ContentView: View {
 					GoogleSimilarImagesView(results: viewModel.googleSimilarImagesResponse)
 				}
 				
+				if (viewModel.classificationStatus == .awaitingOpenAIResponse) {
+					Text("Asking ChatGPT")
+						.card()
+				}
+				
+				if (viewModel.classificationStatus == .awaitingGoogleVisionResponse) {
+					Text("Finding Similar Images")
+						.card()
+				}
+				
 				Spacer()
 				
 				if (
