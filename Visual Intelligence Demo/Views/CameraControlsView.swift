@@ -14,14 +14,23 @@ struct CameraControlsView: View {
     var body: some View {
 		HStack(alignment: .center, spacing: 40) {
 			
-			if (viewModel.classificationStatus == .initial) {
-				SecondaryControlButton(symbol: "text.bubble", title: "Ask", action: {})
+			if (viewModel.classificationStatus == .initial && !viewModel.askingOpenAIQuestion) {
+				SecondaryControlButton(symbol: "text.bubble", title: "Ask", action: {
+					withAnimation {
+						viewModel.askingOpenAIQuestion = true
+					}
+				})
 			}
 		
 			Button(action: {
 				
 				if (viewModel.classificationStatus != .initial) {
 					viewModel.close()
+				} else if (viewModel.askingOpenAIQuestion) {
+					withAnimation {
+						viewModel.askingOpenAIQuestion = false
+						viewModel.openAIQuestion = ""
+					}
 				} else {
 					if !viewModel.capturingPhoto {
 						viewModel.capturingPhoto = true
@@ -33,7 +42,7 @@ struct CameraControlsView: View {
 			}) {
 				ZStack {
 					
-					if (viewModel.classificationStatus != .initial) {
+					if (viewModel.classificationStatus != .initial  || viewModel.askingOpenAIQuestion) {
 						Image(systemName: "xmark")
 							.font(.system(size: 30))
 							.foregroundStyle(Color.white)
@@ -57,7 +66,7 @@ struct CameraControlsView: View {
 				}
 			}
 			
-			if (viewModel.classificationStatus == .initial) {
+			if (viewModel.classificationStatus == .initial && !viewModel.askingOpenAIQuestion) {
 				SecondaryControlButton(symbol: "photo", title: "Search", action: {})
 			}
 		}

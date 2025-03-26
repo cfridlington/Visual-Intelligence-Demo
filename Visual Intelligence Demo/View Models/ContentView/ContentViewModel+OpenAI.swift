@@ -9,6 +9,19 @@ import SwiftUI
 
 extension ContentViewModel {
 	
+	public func captureAndSendQueryToOpenAI () async {
+		do {
+			try await capture()
+			
+			classificationStatus = .awaitingOpenAIResponse
+			
+			await sendQueryToOpenAI()
+			
+		} catch {
+			fatalError("Cannot capture image")
+		}
+	}
+	
 	public func sendQueryToOpenAI () async {
 		
 		let permissionGranted = UserDefaults.standard.bool(forKey: "permissionGrantedOpenAI")

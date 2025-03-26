@@ -89,6 +89,10 @@ struct ContentView: View {
 				
 				Spacer()
 				
+				if (viewModel.askingOpenAIQuestion) {
+					AskingQuestionView(viewModel: $viewModel)
+				}
+				
 				if (
 					!viewModel.presentingGoogleSimilarImages &&
 					!viewModel.presentingEventView &&
@@ -97,7 +101,9 @@ struct ContentView: View {
 					ActionButtonStripView(viewModel: $viewModel)
 				}
 				
-				CameraControlsView(viewModel: $viewModel)
+				if (!viewModel.askingOpenAIQuestion) {
+					CameraControlsView(viewModel: $viewModel)
+				}
 				
 			}
 		}
