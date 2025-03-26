@@ -23,9 +23,11 @@ struct CameraControlsView: View {
 				if (viewModel.classificationStatus != .initial) {
 					viewModel.close()
 				} else {
-					Task {
-						await viewModel.performVisionAnalysis()
-						await viewModel.performTextAnalysis()
+					if !viewModel.capturingPhoto {
+						viewModel.capturingPhoto = true
+						Task {
+							await viewModel.performVisionAnalysis()
+						}
 					}
 				}
 			}) {

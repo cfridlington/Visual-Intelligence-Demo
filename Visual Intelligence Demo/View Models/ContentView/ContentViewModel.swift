@@ -28,7 +28,7 @@ class ContentViewModel: NSObject, AVCapturePhotoCaptureDelegate {
 	var askingQuestion: Bool = false
 	var question: String = ""
 	
-	var isPhotoCaptured: Bool = false
+	var capturingPhoto: Bool = false
 	var cameraSession = AVCaptureSession()
 	var cameraPreview: AVCaptureVideoPreviewLayer!
 	var capturedOutput = AVCapturePhotoOutput()
@@ -98,7 +98,6 @@ class ContentViewModel: NSObject, AVCapturePhotoCaptureDelegate {
 	}
 	
 	public func capture () async throws {
-		
 		capturedData = try await withCheckedThrowingContinuation { continuation in
 			capturedImageContinuation = continuation
 			self.capturedOutput.capturePhoto(with: AVCapturePhotoSettings(), delegate: self)
@@ -117,6 +116,7 @@ class ContentViewModel: NSObject, AVCapturePhotoCaptureDelegate {
 		}
 		
 		capturedImageContinuation?.resume(returning: data)
+		capturingPhoto = false
 	}
 	
 	public func performLocalClassification () async {

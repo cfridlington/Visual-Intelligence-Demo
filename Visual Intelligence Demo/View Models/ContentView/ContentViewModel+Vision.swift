@@ -17,6 +17,18 @@ extension ContentViewModel {
 			
 			classificationStatus = .waiting
 			
+			await performSubjectAnalysis()
+			await performTextAnalysis()
+			
+		} catch {
+			fatalError("Cannot capture image")
+		}
+	}
+	
+	private func performSubjectAnalysis () async {
+		
+		do {
+			
 			let request = ClassifyImageRequest()
 			var results: ClassifyImageRequest.Result
 			
@@ -80,10 +92,9 @@ extension ContentViewModel {
 		return mask
 	}
 
-	public func performTextAnalysis () async {
+	private func performTextAnalysis () async {
 		
 		do {
-			try await capture()
 			
 			var request = RecognizeTextRequest()
 			request.recognitionLevel = .accurate
