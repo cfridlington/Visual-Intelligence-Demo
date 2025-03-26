@@ -255,6 +255,7 @@
 				DEVELOPMENT_TEAM = RDB4WNLF4Z;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Visual-Intelligence-Demo-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Demo;
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app needs access to your camera in order to analyze objects or places using Visual Intelligence.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -290,6 +291,7 @@
 				DEVELOPMENT_TEAM = RDB4WNLF4Z;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Visual-Intelligence-Demo-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Demo;
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app needs access to your camera in order to analyze objects or places using Visual Intelligence.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;

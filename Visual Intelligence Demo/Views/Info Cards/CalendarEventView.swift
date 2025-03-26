@@ -6,10 +6,15 @@
 //
 
 import SwiftUI
+import EventKit
 
 struct CalendarEventView: View {
 	
 	@Binding var presented: Bool
+	
+	@State private var showAlert: Bool = false
+	@State private var alertTitle: String = ""
+	@State private var alertMessage: String = ""
 	
 	var title: String?
 	var date: Date?
@@ -76,7 +81,7 @@ struct CalendarEventView: View {
 					
 				Button("Schedule") {
 					withAnimation {
-						presented = false
+						requestCalendarAccess(title: title ?? "New Event", date: date ?? Date())
 					}
 				}
 					.frame(maxWidth: .infinity)
@@ -88,7 +93,41 @@ struct CalendarEventView: View {
 			
 		}
 		.card()
+		.alert(isPresented: $showAlert) {
+			Alert(title: Text(alertTitle), message: Text(alertMessage))
+		}
+		
     }
+	
+	func requestCalendarAccess(title: String, date: Date) {
+		let eventStore = EKEventStore()
+		
+		eventStore.requestWriteOnlyAccessToEvents() { (granted, error) in
+			if granted && error == nil {
+				let calendarEvent = EKEvent(eventStore: eventStore)
+				calendarEvent.title = title
+				calendarEvent.startDate = date
+				calendarEvent.endDate = date.addingTimeInterval(3600)
+				calendarEvent.calendar = eventStore.defaultCalendarForNewEvents
+				
+				do {
+					try eventStore.save(calendarEvent, span: .thisEvent)
+					withAnimation {
+						presented = false
+					}
+				} catch {
+						alertTitle = "Error"
+						alertMessage = "There was an error adding the event to your calendar."
+						showAlert = true
+				}
+			} else {
+					alertTitle = "Error"
+					alertMessage = "Access to the calendar was denied."
+					showAlert = true
+			}
+		}
+	}
+	
 }
 
 #Preview {
