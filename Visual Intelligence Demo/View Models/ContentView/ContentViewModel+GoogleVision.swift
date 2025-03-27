@@ -62,12 +62,6 @@ extension ContentViewModel {
 		do {
 			let (data, _) = try await URLSession.shared.upload(for: request, from: encodedData)
 			
-			print(data)
-			
-			if let str = String(data: data, encoding: .utf8) {
-				print("Successfully decoded: \(str)")
-			}
-			
 			let response = try JSONDecoder().decode(GoogleVisionResponse.self, from: data)
 			
 			classificationStatus = .completed

@@ -137,46 +137,6 @@ class ContentViewModel: NSObject, AVCapturePhotoCaptureDelegate {
 		capturingPhoto = false
 	}
 	
-//	public func performLocalClassification () async {
-//		
-//		onDeviceClassification = nil
-//		
-//		do {
-//			try await capture()
-//		} catch {
-//			print("Error")
-//		}
-//		
-//		let image = UIImage(data: capturedData!)!
-//		
-//		let confidenceThreshold = 0.8
-//		
-//		classificationStatus = .waiting
-//		
-//		guard let resizedImage = image.resizeImageTo(size: CGSize(width: 360, height: 360)) else { return }
-//		guard let buffer = resizedImage.convertToBuffer() else { return }
-//		
-//		do {
-//			let model = try VisualIntelligenceKnowledge()
-//			let output = try model.prediction(image: buffer)
-//			
-//			let sorted = output.targetProbability.sorted { $0.value > $1.value }
-//			
-//			if (sorted.first?.value ?? 0 > confidenceThreshold) {
-//				//					onDeviceClassification = sorted.first!.key
-//				classificationStatus = .completed
-//			} else {
-//				withAnimation {
-//					presentingExternalClassificationOptions = true
-//				}
-//			}
-//			
-//		} catch {
-//			print("Error Prediciting: \(error.localizedDescription)")
-//		}
-//		
-//	}
-	
 	// MARK: Close Classification
 	
 	public func close () {
