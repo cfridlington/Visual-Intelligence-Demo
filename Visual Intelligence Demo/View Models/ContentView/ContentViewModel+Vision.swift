@@ -82,7 +82,7 @@ extension ContentViewModel {
 		}
 	}
 	
-	private func isolateImageSubject (data: Data) async throws -> CVPixelBuffer? {
+	internal func isolateImageSubject (data: Data) async throws -> CVPixelBuffer? {
 		
 		let request = GenerateForegroundInstanceMaskRequest()
 		let result = try await request.perform(on: data)

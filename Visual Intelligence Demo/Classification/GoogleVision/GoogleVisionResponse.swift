@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftData
 
 //{
 //  "responses": [
@@ -287,27 +288,117 @@ import Foundation
 //  ]
 //}
 
-
-struct GoogleVisionResponse: Decodable {
+@Model
+class GoogleVisionResponse: Decodable {
 	var responses: [GoogleVisionResponseType]
+	
+	init(responses: [GoogleVisionResponseType]) {
+		self.responses = responses
+	}
+	
+	enum CodingKeys: CodingKey {
+		case responses
+	}
+	
+	required init(from decoder: any Decoder) throws {
+		let container = try decoder.container(keyedBy: CodingKeys.self)
+		responses = try container.decode([GoogleVisionResponseType].self, forKey: .responses)
+	}
 }
 
-struct GoogleVisionResponseType: Decodable {
+@Model
+class GoogleVisionResponseType: Decodable {
 	var webDetection: GoogleVisionReponseWebDetection
+	
+	init(webDetection: GoogleVisionReponseWebDetection) {
+		self.webDetection = webDetection
+	}
+	
+	enum CodingKeys: CodingKey {
+		case webDetection
+	}
+	
+	required init(from decoder: any Decoder) throws {
+		let container = try decoder.container(keyedBy: CodingKeys.self)
+		webDetection = try container.decode(GoogleVisionReponseWebDetection.self, forKey: .webDetection)
+	}
 }
 
-struct GoogleVisionReponseWebDetection: Decodable {
+@Model
+class GoogleVisionReponseWebDetection: Decodable {
 	var partialMatchingImages: [GoogleVisionReponseImage]?
 	var visuallySimilarImages: [GoogleVisionReponseImage]?
 	var pagesWithMatchingImages: [GoogleVisionReponsePageWithMatchingImages]?
+	
+	init(partialMatchingImages: [GoogleVisionReponseImage]? = nil, visuallySimilarImages: [GoogleVisionReponseImage]? = nil, pagesWithMatchingImages: [GoogleVisionReponsePageWithMatchingImages]? = nil) {
+		self.partialMatchingImages = partialMatchingImages
+		self.visuallySimilarImages = visuallySimilarImages
+		self.pagesWithMatchingImages = pagesWithMatchingImages
+	}
+	
+	enum CodingKeys: CodingKey {
+		case partialMatchingImages
+		case visuallySimilarImages
+		case pagesWithMatchingImages
+	}
+	
+	required init(from decoder: any Decoder) throws {
+		let container = try decoder.container(keyedBy: CodingKeys.self)
+		
+		if let partialMatchingImages = try? container.decode([GoogleVisionReponseImage].self, forKey: .partialMatchingImages) {
+			self.partialMatchingImages = partialMatchingImages
+		}
+		
+		if let visuallySimilarImages = try? container.decode([GoogleVisionReponseImage].self, forKey: .visuallySimilarImages) {
+			self.visuallySimilarImages = visuallySimilarImages
+		}
+		
+		if let pagesWithMatchingImages = try? container.decode([GoogleVisionReponsePageWithMatchingImages].self, forKey: .pagesWithMatchingImages) {
+			self.pagesWithMatchingImages = pagesWithMatchingImages
+		}
+	}
 }
 
-struct GoogleVisionReponsePageWithMatchingImages: Decodable {
+@Model
+class GoogleVisionReponsePageWithMatchingImages: Decodable {
 	var pageTitle: String
 	var url: URL
 	var partialMatchingImages: [GoogleVisionReponseImage]
+	
+	init(pageTitle: String, url: URL, partialMatchingImages: [GoogleVisionReponseImage]) {
+		self.pageTitle = pageTitle
+		self.url = url
+		self.partialMatchingImages = partialMatchingImages
+	}
+	
+	enum CodingKeys: CodingKey {
+		case pageTitle
+		case url
+		case partialMatchingImages
+	}
+	
+	required init(from decoder: any Decoder) throws {
+		let container = try decoder.container(keyedBy: CodingKeys.self)
+		pageTitle = try container.decode(String.self, forKey: .pageTitle)
+		url = try container.decode(URL.self, forKey: .url)
+		partialMatchingImages = try container.decode([GoogleVisionReponseImage].self, forKey: .partialMatchingImages)
+	}
 }
 
-struct GoogleVisionReponseImage: Decodable {
+@Model
+class GoogleVisionReponseImage: Decodable {
 	var url: URL
+	
+	init(url: URL) {
+		self.url = url
+	}
+	
+	enum CodingKeys: CodingKey {
+		case url
+	}
+	
+	required init(from decoder: any Decoder) throws {
+		let container = try decoder.container(keyedBy: CodingKeys.self)
+		url = try container.decode(URL.self, forKey: .url)
+	}
 }

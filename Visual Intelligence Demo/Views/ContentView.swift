@@ -153,6 +153,28 @@ struct ContentView: View {
 		} message: {
 			Text("An error occured when attempting to communicate with the Google Vision API. Please confirm the entered API Key is correct.")
 		}
+		.onChange(of: viewModel.onDeviceClassification) {
+			guard let data = viewModel.capturedData else { return }
+			guard let classification = viewModel.onDeviceClassification else { return }
+			
+			let previousResponse = PreviousResponse(imageData: data, visionClassification: classification)
+			modelContext.insert(previousResponse)
+		}
+		.onChange(of: viewModel.openAIResponse) {
+			guard let data = viewModel.capturedData else { return }
+			guard let response = viewModel.openAIResponse else { return }
+			guard let message = response.choices.first?.message.content else { return }
+			
+			let previousResponse = PreviousResponse(imageData: data, openAIResponse: message)
+			modelContext.insert(previousResponse)
+		}
+		.onChange(of: viewModel.googleSimilarImagesResponse) {
+			guard let data = viewModel.capturedData else { return }
+			guard let response = viewModel.googleSimilarImagesResponse else { return }
+			
+			let previousResponse = PreviousResponse(imageData: data, googleVisionResponse: response)
+			modelContext.insert(previousResponse)
+		}
     }
 }
 

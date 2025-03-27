@@ -12,7 +12,7 @@ import SwiftData
 struct Visual_Intelligence_DemoApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+			PreviousResponse.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 

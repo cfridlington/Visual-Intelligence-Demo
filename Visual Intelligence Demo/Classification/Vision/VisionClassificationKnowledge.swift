@@ -6,19 +6,29 @@
 //
 
 import Foundation
+import SwiftData
 
-struct VisionClassificationKnowledge {
+@Model
+class VisionClassificationKnowledge {
     var name: String
-    var description: String
+    var information: String
     var symbol: String
     var wikipedia: WikipediaArticle?
 	
 	var displayName: String {
 		return name.replacingOccurrences(of: "_", with: " ").capitalized
 	}
+	
+	init(name: String, description: String, symbol: String, wikipedia: WikipediaArticle? = nil) {
+		self.name = name
+		self.information = description
+		self.symbol = symbol
+		self.wikipedia = wikipedia
+	}
 }
 
-struct WikipediaArticle {
+@Model
+class WikipediaArticle {
 	var title: String
 	var category: String
 	var link: URL

@@ -8,6 +8,24 @@
 import SwiftUI
 
 extension ContentViewModel {
+	
+	public func captureAndRequestSimilarImagesFromGoogle () async {
+		do {
+			try await capture()
+			
+			classificationStatus = .awaitingGoogleVisionResponse
+			
+			if let mask = try await isolateImageSubject(data: capturedData!) {
+				maskedImage = UIImage(pixelBuffer: mask)
+			}
+			
+			await requestSimilarImagesFromGoogle()
+			
+		} catch {
+			fatalError("Cannot capture image")
+		}
+	}
+	
 	public func requestSimilarImagesFromGoogle() async {
 		
 		let permissionGranted = UserDefaults.standard.bool(forKey: "permissionGrantedGoogleVision")

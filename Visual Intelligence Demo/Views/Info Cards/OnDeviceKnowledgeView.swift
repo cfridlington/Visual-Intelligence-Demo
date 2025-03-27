@@ -27,8 +27,8 @@ struct OnDeviceKnowledgeView: View {
 						.font(.headline)
 				}
 				
-				if (expanded && classification.description != "") {
-					Text(classification.description)
+				if (expanded && classification.information != "") {
+					Text(classification.information)
 						.font(.subheadline)
 				}
 					

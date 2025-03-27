@@ -67,7 +67,14 @@ struct CameraControlsView: View {
 			}
 			
 			if (viewModel.classificationStatus == .initial && !viewModel.askingOpenAIQuestion) {
-				SecondaryControlButton(symbol: "photo", title: "Search", action: {})
+				SecondaryControlButton(symbol: "photo", title: "Search", action: {
+					if !viewModel.capturingPhoto {
+						viewModel.capturingPhoto = true
+						Task {
+							await viewModel.captureAndRequestSimilarImagesFromGoogle()
+						}
+					}
+				})
 			}
 		}
 		.padding(.bottom, 20)
