@@ -12,197 +12,168 @@ struct ContentView: View {
 	
     @Environment(\.modelContext) private var modelContext
 	
-	@StateObject var camera = CameraModel()
-	@StateObject var query = OpenAIQuery()
-	@StateObject var classifier = Classifier()
-	
-	@State private var historySheetVisible: Bool = false
-	@State private var askingQuestion: Bool = false
-	@State private var question: String = ""
-	@FocusState private var focused: Bool
+	@State private var viewModel = ContentViewModel()
 
     var body: some View {
-		ZStack {
+		
+		ZStack(alignment: .center) {
 			
-			CameraView(camera: camera)
-				.edgesIgnoringSafeArea(.all)
+			CameraViewFinder(viewModel: $viewModel)
 			
-//			Color.black
-//				.edgesIgnoringSafeArea(.all)
+			if (viewModel.presentingWelcome) {
+				WelcomeView(isPresented: $viewModel.presentingWelcome)
+					.animation(.easeOut, value: viewModel.presentingWelcome)
+			}
 			
-			VStack {
+			if (viewModel.presentingOpenAIPermissionsView) {
+				OpenAIPermissionView(isPresented: $viewModel.presentingOpenAIPermissionsView, continueRequest: viewModel.sendQueryToOpenAI)
+			}
+			
+			if (viewModel.presentingGoogleVisionPermissionsView) {
+				GoogleVisionPermissionView(isPresented: $viewModel.presentingGoogleVisionPermissionsView, continueRequest: viewModel.requestSimilarImagesFromGoogle)
+			}
+			
+			VStack(spacing: 20) {
 				
-				if (classifier.predicition != nil) {
-					Text(classifier.predicition!)
-						.padding()
-						.background(.ultraThickMaterial)
-						.clipShape(RoundedRectangle(cornerRadius: 10))
-				}
-				
-				if (query.status == .waiting) {
-					Text("Asking ChatGPT")
-						.padding()
-						.background(.ultraThickMaterial)
-						.clipShape(RoundedRectangle(cornerRadius: 10))
-				}
-				
-				if (query.response != nil) {
-					VStack {
-						
-						ScrollView {
-							Text(LocalizedStringKey(query.response?.choices.first?.message.content ?? ""))
+				HStack {
+					Spacer()
+					
+					Menu(content: {
+						Button("History", systemImage: "scroll") {
+							viewModel.presentingHistory = true
 						}
-						
-						Divider()
-						
-						HStack(alignment: .center) {
-							
-							Link(destination: URL(string: "https://www.openai.com")!) {
-								Image("OpenAI")
-									.resizable()
-									.scaledToFit()
-									.frame(width: 75)
+						Button("Developer Options", systemImage: "wrench.and.screwdriver") {
+							viewModel.presentingDeveloperOptions = true
+						}
+					}, label: {
+						Image(systemName: "ellipsis")
+							.padding(10)
+							.background {
+								Circle()
+									.foregroundStyle(.ultraThinMaterial)
 							}
-							
-							Text("•  Check import info for mistakes ")
-								.font(.callout)
-								.foregroundStyle(Color(UIColor.systemGray))
-							
-							Spacer()
-						}.padding(.top, 5)
-					}
-						.padding()
-						.background(.ultraThickMaterial)
-						.clipShape(RoundedRectangle(cornerRadius: 10))
-						.padding()
+						
+					}).buttonStyle(.plain)
+						.environment(\.colorScheme, .dark)
+				}.padding(.horizontal, 20)
+				
+				if (viewModel.onDeviceClassification != nil) {
+					OnDeviceKnowledgeView(classification: viewModel.onDeviceClassification!)
 				}
 				
-				if (askingQuestion) {
-					TextField("Ask a question", text: $question)
-						.focused($focused)
-						.foregroundStyle(Color.white)
-						.padding()
-						.background(.ultraThinMaterial)
-						.clipShape(RoundedRectangle(cornerRadius: 10))
-						.padding()
-						.onSubmit {
-							camera.capture()
-						}
+				if (viewModel.presentingEventView) {
+					CalendarEventView(presented: $viewModel.presentingEventView, title: viewModel.eventTitle, date: viewModel.eventDate)
+				}
+				
+				if (viewModel.presentingTextToSpeechView) {
+					TextToSpeechView(text: viewModel.allRecognizedText ?? "", playPause: viewModel.playPauseSpokenText)
+				}
+				
+				if (viewModel.openAIResponse != nil) {
+					OpenAIResponseView(response: viewModel.openAIResponse!)
+				}
+				
+				if (viewModel.presentingGoogleSimilarImages) {
+					GoogleSimilarImagesView(results: viewModel.googleSimilarImagesResponse)
+				}
+				
+				if (viewModel.classificationStatus == .awaitingOpenAIResponse) {
+					Text("Asking ChatGPT")
+						.card()
+				}
+				
+				if (viewModel.classificationStatus == .awaitingGoogleVisionResponse) {
+					Text("Finding Similar Images")
+						.card()
 				}
 				
 				Spacer()
-
-				HStack(alignment: .center, spacing: 60) {
-					
-					Button(action: {
-						withAnimation {
-							askingQuestion.toggle()
-							if askingQuestion {
-								focused = true
-							}
-						}
-					}) {
-						Image(systemName: "text.bubble")
-							.font(.system(size: 20))
-							.foregroundStyle(Color.white)
-							.padding(10)
-							.background {
-								Circle()
-									.fill(.ultraThinMaterial)
-							}
-					}.buttonStyle(PlainButtonStyle())
-					
-					Button(action: {
-						
-						if (query.response != nil || query.status == .waiting || classifier.predicition != nil || classifier.status == .waiting) {
-							classifier.reset()
-							query.reset()
-						} else {
-							classifier.status = .waiting
-							camera.capture()
-						}
-						
-					}) {
-						ZStack {
-							
-							if (query.response != nil || query.status == .waiting || classifier.predicition != nil || classifier.status == .waiting) {
-								Image(systemName: "xmark")
-									.font(.system(size: 25))
-									.foregroundStyle(Color.white)
-							} else {
-								Circle()
-									.fill(Color.white)
-									.frame(width: 50, height: 50)
-							}
-							
-							Circle()
-								.stroke(Color.white, lineWidth: 2)
-								.frame(width: 60, height: 60)
-						}
-					}
-					.buttonStyle(PlainButtonStyle())
-					
-					Button(action: {
-						withAnimation {
-							historySheetVisible = true
-						}
-					}) {
-						Image(systemName: "photo")
-							.font(.system(size: 20))
-							.foregroundStyle(Color.white)
-							.padding(10)
-							.background {
-								Circle()
-									.fill(.ultraThinMaterial)
-							}
-					}.buttonStyle(PlainButtonStyle())
+				
+				if (viewModel.askingOpenAIQuestion) {
+					AskingQuestionView(viewModel: $viewModel)
 				}
-			}
-		}.ignoresSafeArea(.keyboard, edges: .bottom)
-		.overlay {
-			if (query.status == .waiting || classifier.status == .waiting) {
-				IntelligenceGlow()
+				
+				if (
+					!viewModel.presentingGoogleSimilarImages &&
+					!viewModel.presentingEventView &&
+					!viewModel.presentingTextToSpeechView
+				) {
+					ActionButtonStripView(viewModel: $viewModel)
+				}
+				
+				if (!viewModel.askingOpenAIQuestion) {
+					CameraControlsView(viewModel: $viewModel)
+				}
+				
 			}
 		}
-		.sheet(isPresented: $historySheetVisible) {
+		.sheet(isPresented: $viewModel.presentingHistory) {
 			HistoryView()
 		}
-		.onChange(of: camera.capturedData) {
-			Task {
-				
-				classifier.reset()
-				query.reset()
-				
-				let image = UIImage(data: camera.capturedData!)!
-				
-				if (question == "") {
-					classifier.classify(image)
-				}
-				
-				if (classifier.predicition == nil) {
-					await query.request(image: image, question: question)
+		.sheet(isPresented: $viewModel.presentingDeveloperOptions) {
+			DeveloperOptionsView()
+		}
+		.alert("API Key Required for OpenAI", isPresented: $viewModel.openAIMissingAPIAlert) {
+			
+			Button("Add in Developer Options", role: .none) {
+				withAnimation {
+					viewModel.presentingDeveloperOptions = true
+					viewModel.openAIMissingAPIAlert = false
 				}
 			}
+			
+			Link("Request a Demo API Key", destination: URL(string: "https://www.cfridlington.com/contact")!)
+			
+			Button("Cancel", role: .cancel) { }
+		} message: {
+			Text("An API Key is required to use OpenAI. This can be obtained in the OpenAI Developer Portal. Alternatively, you may request a demo API Key from Christopher Fridlington.")
 		}
-		.onChange(of: query.response) {
-			if (query.response != nil) {
-				let imageData = camera.capturedData ?? Data()
-				let response = query.response?.choices.first?.message.content ?? ""
-				let date = Date.now
-				
-				let item = Item(imageData: imageData, response: response, timestamp: date)
-				modelContext.insert(item)
+		.alert("API Key Required for Google Vision", isPresented: $viewModel.googleVisionMissingAPIAlert) {
+			
+			Button("Add in Developer Options", role: .none) {
+				withAnimation {
+					viewModel.presentingDeveloperOptions = true
+					viewModel.googleVisionMissingAPIAlert = false
+				}
 			}
+			
+			Link("Request a Demo API Key", destination: URL(string: "https://www.cfridlington.com/contact")!)
+			
+			Button("Cancel", role: .cancel) { }
+		} message: {
+			Text("An API Key is required to use the Google Vision. This can be obtained in the Google Cloud Console. Alternatively, you may request a demo API Key from Christopher Fridlington.")
 		}
-		.onChange(of: classifier.predicition) {
-			if (classifier.predicition != nil) {
-				let imageData = camera.capturedData ?? Data()
-				let response = classifier.predicition!
-				let date = Date.now
-				
-				let item = Item(imageData: imageData, response: response, timestamp: date)
-				modelContext.insert(item)
-			}
+		.alert("OpenAI API Error", isPresented: $viewModel.openAIAPIError) {
+			Button("Dismiss", role: .cancel) { }
+		} message: {
+			Text("An error occured when attempting to communicate with the OpenAI API. Please confirm the entered API Key is correct.")
+		}
+		.alert("Google Vision API Error", isPresented: $viewModel.googleVisionAPIError) {
+			Button("Dismiss", role: .cancel) { }
+		} message: {
+			Text("An error occured when attempting to communicate with the Google Vision API. Please confirm the entered API Key is correct.")
+		}
+		.onChange(of: viewModel.onDeviceClassification) {
+			guard let data = viewModel.capturedData else { return }
+			guard let classification = viewModel.onDeviceClassification else { return }
+			
+			let previousResponse = PreviousResponse(imageData: data, visionClassification: classification)
+			modelContext.insert(previousResponse)
+		}
+		.onChange(of: viewModel.openAIResponse) {
+			guard let data = viewModel.capturedData else { return }
+			guard let response = viewModel.openAIResponse else { return }
+			guard let message = response.choices.first?.message.content else { return }
+			
+			let previousResponse = PreviousResponse(imageData: data, openAIResponse: message)
+			modelContext.insert(previousResponse)
+		}
+		.onChange(of: viewModel.googleSimilarImagesResponse) {
+			guard let data = viewModel.capturedData else { return }
+			guard let response = viewModel.googleSimilarImagesResponse else { return }
+			
+			let previousResponse = PreviousResponse(imageData: data, googleVisionResponse: response)
+			modelContext.insert(previousResponse)
 		}
     }
 }

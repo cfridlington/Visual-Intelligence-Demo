@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "Koala_climbing_tree.jpg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

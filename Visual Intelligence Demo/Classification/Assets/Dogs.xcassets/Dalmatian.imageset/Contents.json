@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "Sun_Dog_Dalmatian.jpg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
